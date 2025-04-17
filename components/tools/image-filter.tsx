@@ -129,239 +129,374 @@ const PRESET_FILTERS = {
     contrast: 100,
     saturate: 100,
     sepia: 0,
-    'hue-rotate': '0deg'
+    'hue-rotate': '0deg',
+    blur: 0,
+    invert: 0,
+    opacity: 100,
+    grayscale: 0
   },
   grayscale: {
     brightness: 100,
-    contrast: 100,
-    saturate: 0,
+    contrast: 110,
+    saturate: 100,
     sepia: 0,
-    'hue-rotate': '0deg'
+    'hue-rotate': '0deg',
+    blur: 0,
+    invert: 0,
+    opacity: 100,
+    grayscale: 100
   },
   sepia: {
-    brightness: 100,
-    contrast: 100,
-    saturate: 100,
+    brightness: 95,
+    contrast: 105,
+    saturate: 90,
     sepia: 100,
-    'hue-rotate': '0deg'
+    'hue-rotate': '0deg',
+    blur: 0,
+    invert: 0,
+    opacity: 100,
+    grayscale: 0
   },
   warm: {
-    brightness: 100,
+    brightness: 105,
     contrast: 100,
     saturate: 150,
     sepia: 30,
-    'hue-rotate': '30deg'
+    'hue-rotate': '30deg',
+    blur: 0,
+    invert: 0,
+    opacity: 100,
+    grayscale: 0
   },
   cool: {
     brightness: 100,
     contrast: 100,
     saturate: 150,
     sepia: 0,
-    'hue-rotate': '-30deg'
+    'hue-rotate': '-30deg',
+    blur: 0,
+    invert: 0,
+    opacity: 100,
+    grayscale: 0
   },
   vintage: {
     brightness: 90,
     contrast: 85,
-    saturate: 100,
+    saturate: 75,
     sepia: 50,
-    'hue-rotate': '0deg'
+    'hue-rotate': '0deg',
+    blur: 0.5,
+    invert: 0,
+    opacity: 95,
+    grayscale: 10
   },
   dramatic: {
     brightness: 110,
     contrast: 150,
     saturate: 120,
     sepia: 0,
-    'hue-rotate': '0deg'
+    'hue-rotate': '0deg',
+    blur: 0,
+    invert: 0,
+    opacity: 100,
+    grayscale: 0
   },
   fade: {
-    brightness: 100,
+    brightness: 105,
     contrast: 95,
     saturate: 70,
     sepia: 10,
-    'hue-rotate': '0deg'
+    'hue-rotate': '0deg',
+    blur: 0.5,
+    invert: 0,
+    opacity: 90,
+    grayscale: 15
   },
   matte: {
     brightness: 95,
     contrast: 90,
     saturate: 90,
     sepia: 10,
-    'hue-rotate': '0deg'
+    'hue-rotate': '0deg',
+    blur: 0.5,
+    invert: 0,
+    opacity: 95,
+    grayscale: 10
   },
   moody: {
     brightness: 90,
     contrast: 120,
     saturate: 85,
     sepia: 20,
-    'hue-rotate': '0deg'
+    'hue-rotate': '0deg',
+    blur: 0,
+    invert: 0,
+    opacity: 100,
+    grayscale: 10
   },
   bright: {
     brightness: 120,
     contrast: 110,
     saturate: 110,
     sepia: 0,
-    'hue-rotate': '0deg'
+    'hue-rotate': '0deg',
+    blur: 0,
+    invert: 0,
+    opacity: 100,
+    grayscale: 0
   },
   punchy: {
     brightness: 110,
     contrast: 130,
     saturate: 130,
     sepia: 0,
-    'hue-rotate': '0deg'
+    'hue-rotate': '0deg',
+    blur: 0,
+    invert: 0,
+    opacity: 100,
+    grayscale: 0
   },
   retro: {
     brightness: 95,
     contrast: 95,
     saturate: 85,
     sepia: 40,
-    'hue-rotate': '20deg'
+    'hue-rotate': '20deg',
+    blur: 0.5,
+    invert: 0,
+    opacity: 95,
+    grayscale: 0
   },
   summer: {
     brightness: 110,
     contrast: 105,
     saturate: 120,
     sepia: 15,
-    'hue-rotate': '10deg'
+    'hue-rotate': '10deg',
+    blur: 0,
+    invert: 0,
+    opacity: 100,
+    grayscale: 0
   },
   winter: {
     brightness: 100,
     contrast: 110,
     saturate: 90,
     sepia: 10,
-    'hue-rotate': '-10deg'
+    'hue-rotate': '-10deg',
+    blur: 0.3,
+    invert: 0,
+    opacity: 100,
+    grayscale: 10
   },
-  // Thêm các preset mới
   sunset: {
     brightness: 105,
     contrast: 110,
     saturate: 140,
     sepia: 25,
-    'hue-rotate': '15deg'
+    'hue-rotate': '15deg',
+    blur: 0,
+    invert: 0,
+    opacity: 100,
+    grayscale: 0
   },
   spring: {
     brightness: 105,
     contrast: 100,
     saturate: 130,
     sepia: 5,
-    'hue-rotate': '5deg'
+    'hue-rotate': '5deg',
+    blur: 0.2,
+    invert: 0,
+    opacity: 100,
+    grayscale: 0
   },
   autumn: {
     brightness: 95,
     contrast: 110,
     saturate: 130,
     sepia: 30,
-    'hue-rotate': '25deg'
+    'hue-rotate': '25deg',
+    blur: 0,
+    invert: 0,
+    opacity: 100,
+    grayscale: 0
   },
   forest: {
     brightness: 90,
     contrast: 115,
     saturate: 140,
     sepia: 15,
-    'hue-rotate': '-15deg'
+    'hue-rotate': '-15deg',
+    blur: 0,
+    invert: 0,
+    opacity: 100,
+    grayscale: 0
   },
   ocean: {
     brightness: 100,
     contrast: 105,
     saturate: 120,
     sepia: 0,
-    'hue-rotate': '-20deg'
+    'hue-rotate': '-20deg',
+    blur: 0.3,
+    invert: 0,
+    opacity: 98,
+    grayscale: 0
   },
   desert: {
     brightness: 110,
     contrast: 115,
     saturate: 110,
     sepia: 35,
-    'hue-rotate': '10deg'
+    'hue-rotate': '10deg',
+    blur: 0,
+    invert: 0,
+    opacity: 100,
+    grayscale: 0
   },
   midnight: {
     brightness: 85,
     contrast: 125,
     saturate: 95,
     sepia: 10,
-    'hue-rotate': '-15deg'
+    'hue-rotate': '-15deg',
+    blur: 0.5,
+    invert: 0,
+    opacity: 100,
+    grayscale: 20
   },
   pastel: {
     brightness: 105,
     contrast: 90,
     saturate: 85,
     sepia: 5,
-    'hue-rotate': '5deg'
+    'hue-rotate': '5deg',
+    blur: 0.2,
+    invert: 0,
+    opacity: 95,
+    grayscale: 0
   },
   neon: {
     brightness: 115,
     contrast: 130,
     saturate: 160,
     sepia: 0,
-    'hue-rotate': '-10deg'
+    'hue-rotate': '-10deg',
+    blur: 0.5,
+    invert: 0,
+    opacity: 100,
+    grayscale: 0
   },
   cyberpunk: {
     brightness: 110,
     contrast: 140,
     saturate: 150,
     sepia: 0,
-    'hue-rotate': '-30deg'
+    'hue-rotate': '-30deg',
+    blur: 0.3,
+    invert: 15,
+    opacity: 100,
+    grayscale: 0
   },
   noir: {
     brightness: 85,
     contrast: 140,
     saturate: 20,
     sepia: 10,
-    'hue-rotate': '0deg'
+    'hue-rotate': '0deg',
+    blur: 0.5,
+    invert: 0,
+    opacity: 100,
+    grayscale: 80
   },
   cinematic: {
     brightness: 95,
     contrast: 135,
     saturate: 95,
     sepia: 15,
-    'hue-rotate': '5deg'
+    'hue-rotate': '5deg',
+    blur: 0.2,
+    invert: 0,
+    opacity: 100,
+    grayscale: 10
   },
   polaroid: {
     brightness: 105,
     contrast: 90,
     saturate: 90,
     sepia: 20,
-    'hue-rotate': '0deg'
+    'hue-rotate': '0deg',
+    blur: 0.3,
+    invert: 0,
+    opacity: 95,
+    grayscale: 5
   },
   golden: {
     brightness: 105,
     contrast: 110,
     saturate: 120,
     sepia: 40,
-    'hue-rotate': '25deg'
+    'hue-rotate': '25deg',
+    blur: 0.2,
+    invert: 0,
+    opacity: 100,
+    grayscale: 0
   },
   silver: {
     brightness: 100,
     contrast: 110,
     saturate: 80,
     sepia: 0,
-    'hue-rotate': '-15deg'
+    'hue-rotate': '-15deg',
+    blur: 0.3,
+    invert: 0,
+    opacity: 98,
+    grayscale: 20
   },
   chrome: {
     brightness: 115,
     contrast: 120,
     saturate: 110,
     sepia: 0,
-    'hue-rotate': '0deg'
+    'hue-rotate': '0deg',
+    blur: 0,
+    invert: 5,
+    opacity: 100,
+    grayscale: 10
   },
   dreamy: {
     brightness: 105,
     contrast: 95,
     saturate: 90,
     sepia: 15,
-    'hue-rotate': '10deg'
+    'hue-rotate': '10deg',
+    blur: 1,
+    invert: 0,
+    opacity: 95,
+    grayscale: 5
   },
   ethereal: {
     brightness: 110,
     contrast: 90,
     saturate: 95,
     sepia: 10,
-    'hue-rotate': '15deg'
+    'hue-rotate': '15deg',
+    blur: 0.8,
+    invert: 0,
+    opacity: 92,
+    grayscale: 5
   },
   mystic: {
     brightness: 95,
     contrast: 110,
     saturate: 100,
     sepia: 25,
-    'hue-rotate': '-20deg'
+    'hue-rotate': '-20deg',
+    blur: 0.5,
+    invert: 0,
+    opacity: 95,
+    grayscale: 10
   }
 } as const
 
@@ -376,6 +511,11 @@ export default function ImageFilter() {
   const [contrast, setContrast] = useState(100)
   const [saturate, setSaturate] = useState(100)
   const [blur, setBlur] = useState(0)
+  const [sepia, setSepia] = useState(0)
+  const [hueRotate, setHueRotate] = useState(0)
+  const [invert, setInvert] = useState(0)
+  const [opacity, setOpacity] = useState(100)
+  const [grayscale, setGrayscale] = useState(0)
   const [selectedPreset, setSelectedPreset] = useState("none")
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -404,6 +544,11 @@ export default function ImageFilter() {
     setContrast(100)
     setSaturate(100)
     setBlur(0)
+    setSepia(0)
+    setHueRotate(0)
+    setInvert(0)
+    setOpacity(100)
+    setGrayscale(0)
     setSelectedPreset("none")
   }
 
@@ -417,23 +562,15 @@ export default function ImageFilter() {
     setSelectedPreset(preset)
     const filters = PRESET_FILTERS[preset as keyof typeof PRESET_FILTERS]
 
-    // Reset to default values first
-    setBrightness(100)
-    setContrast(100)
-    setSaturate(100)
-    setBlur(0)
-
-    // Apply preset values
-    if ('brightness' in filters) {
-      setBrightness(filters.brightness)
-    }
-    if ('contrast' in filters) {
-      setContrast(filters.contrast)
-    }
-    if ('saturate' in filters) {
-      setSaturate(filters.saturate)
-    }
-    // Không cần xử lý sepia riêng nữa vì nó đã được xử lý trong CSS filter
+    setBrightness(filters.brightness)
+    setContrast(filters.contrast)
+    setSaturate(filters.saturate)
+    setSepia(filters.sepia)
+    setHueRotate(parseInt(filters['hue-rotate']))
+    setBlur(filters.blur)
+    setInvert(filters.invert)
+    setOpacity(filters.opacity)
+    setGrayscale(filters.grayscale)
   }
 
   const getImageStyle = () => {
@@ -455,6 +592,11 @@ export default function ImageFilter() {
         sepia(${filters.sepia}%)
         hue-rotate(${filters['hue-rotate']})
         blur(${blur}px)
+        sepia(${sepia}%)
+        hue-rotate(${hueRotate}deg)
+        invert(${invert}%)
+        opacity(${opacity}%)
+        grayscale(${grayscale}%)
       `
     }
   }
@@ -651,6 +793,76 @@ export default function ImageFilter() {
                         onValueChange={(value) => setBlur(value[0])}
                       />
                     </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Label>Sepia</Label>
+                        <span className="text-sm text-muted-foreground">{sepia}%</span>
+                      </div>
+                      <Slider
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={[sepia]}
+                        onValueChange={(value) => setSepia(value[0])}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Label>Hue Rotate</Label>
+                        <span className="text-sm text-muted-foreground">{hueRotate}°</span>
+                      </div>
+                      <Slider
+                        min={-180}
+                        max={180}
+                        step={1}
+                        value={[hueRotate]}
+                        onValueChange={(value) => setHueRotate(value[0])}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Label>Invert</Label>
+                        <span className="text-sm text-muted-foreground">{invert}%</span>
+                      </div>
+                      <Slider
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={[invert]}
+                        onValueChange={(value) => setInvert(value[0])}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Label>Opacity</Label>
+                        <span className="text-sm text-muted-foreground">{opacity}%</span>
+                      </div>
+                      <Slider
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={[opacity]}
+                        onValueChange={(value) => setOpacity(value[0])}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Label>Grayscale</Label>
+                        <span className="text-sm text-muted-foreground">{grayscale}%</span>
+                      </div>
+                      <Slider
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={[grayscale]}
+                        onValueChange={(value) => setGrayscale(value[0])}
+                      />
+                    </div>
                   </div>
 
                   <div className="flex gap-2">
@@ -717,11 +929,6 @@ export default function ImageFilter() {
     </div>
   )
 }
-
-
-
-
-
 
 
 
