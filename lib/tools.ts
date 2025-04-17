@@ -14,6 +14,7 @@ import {
   GitCompare,
   Crop,
   Sliders,
+  ImagePlus,
 } from "lucide-react"
 
 export interface Tool {
@@ -32,6 +33,14 @@ export interface ToolCategory {
 }
 
 const imageTools: Tool[] = [
+  {
+    id: "image-editor",
+    name: "Image Editor",
+    description: "Edit images with text and layers",
+    icon: ImagePlus,
+    features: ["Drag & drop images", "Text editing", "Font customization", "Layer management"],
+    category: "image",
+  },
   {
     id: "image-cropper",
     name: "Image Cropper",
