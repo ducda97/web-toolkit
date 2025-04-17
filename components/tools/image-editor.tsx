@@ -60,6 +60,7 @@ export default function ImageEditor() {
   const [selectedPreset, setSelectedPreset] = useState<CanvasPreset>("custom")
   const containerRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
+  const [selectedLayer, setSelectedLayer] = useState<Layer | null>(null)
 
   // Thêm hàm tính toán scale
   const calculateScale = (containerWidth: number, containerHeight: number) => {
@@ -99,17 +100,30 @@ export default function ImageEditor() {
         backgroundColor: 'white'
       })
 
-      fabricRef.current.on('selection:created', (e) => {
-        setSelectedObject(fabricRef.current?.getActiveObject() || null)
-      })
-
+      // Lắng nghe sự kiện khi object được chọn trên canvas
+      fabricRef.current.on('selection:created', handleSelectionChange)
+      fabricRef.current.on('selection:updated', handleSelectionChange)
       fabricRef.current.on('selection:cleared', () => {
         setSelectedObject(null)
+        setSelectedLayer(null)
+        // Reset text options khi bỏ chọn
+        setTextOptions({
+          fontFamily: 'Arial',
+          fontSize: 24,
+          fontWeight: 'normal',
+          fontStyle: 'normal',
+          textDecoration: '',
+          fill: '#000000'
+        })
       })
-    }
 
-    return () => {
-      fabricRef.current?.dispose()
+      return () => {
+        if (fabricRef.current) {
+          fabricRef.current.off('selection:created', handleSelectionChange)
+          fabricRef.current.off('selection:updated', handleSelectionChange)
+          fabricRef.current.dispose()
+        }
+      }
     }
   }, [])
 
@@ -196,23 +210,19 @@ export default function ImageEditor() {
   const toggleTextStyle = (style: 'bold' | 'italic' | 'underline') => {
     if (!selectedObject || selectedObject.type !== 'i-text') return
 
+    const newOptions = { ...textOptions }
     switch (style) {
       case 'bold':
-        updateTextOptions({
-          fontWeight: textOptions.fontWeight === 'bold' ? 'normal' : 'bold'
-        })
+        newOptions.fontWeight = textOptions.fontWeight === 'bold' ? 'normal' : 'bold'
         break
       case 'italic':
-        updateTextOptions({
-          fontStyle: textOptions.fontStyle === 'italic' ? 'normal' : 'italic'
-        })
+        newOptions.fontStyle = textOptions.fontStyle === 'italic' ? 'normal' : 'italic'
         break
       case 'underline':
-        updateTextOptions({
-          textDecoration: textOptions.textDecoration === 'underline' ? '' : 'underline'
-        })
+        newOptions.textDecoration = textOptions.textDecoration === 'underline' ? '' : 'underline'
         break
     }
+    updateTextOptions(newOptions)
   }
 
   const handleDownload = () => {
@@ -282,6 +292,40 @@ export default function ImageEditor() {
     setSelectedPreset('custom')
     const newSize = { ...canvasSize, [dimension]: value }
     handleCanvasResize(newSize.width, newSize.height)
+  }
+
+  // Tách logic xử lý selection thành một hàm riêng
+  const handleSelectionChange = (e: fabric.IEvent) => {
+    const activeObject = fabricRef.current?.getActiveObject()
+    setSelectedObject(activeObject || null)
+    
+    // Tìm và set selected layer tương ứng
+    const selectedLayer = layers.find(layer => layer.object === activeObject)
+    setSelectedLayer(selectedLayer || null)
+
+    // Cập nhật text options nếu object được chọn là text
+    if (activeObject?.type === 'i-text') {
+      setTextOptions({
+        fontFamily: activeObject.get('fontFamily') || 'Arial',
+        fontSize: activeObject.get('fontSize') || 24,
+        fontWeight: activeObject.get('fontWeight') || 'normal',
+        fontStyle: activeObject.get('fontStyle') || 'normal',
+        textDecoration: activeObject.get('textDecoration') || '',
+        fill: activeObject.get('fill') || '#000000'
+      })
+    }
+  }
+
+  // Hàm xử lý khi click vào layer trong danh sách
+  const handleLayerClick = (layer: Layer) => {
+    if (fabricRef.current) {
+      fabricRef.current.discardActiveObject()
+      fabricRef.current.setActiveObject(layer.object)
+      fabricRef.current.renderAll()
+      
+      // Sử dụng lại logic xử lý selection
+      handleSelectionChange({ target: layer.object } as fabric.IEvent)
+    }
   }
 
   return (
@@ -409,8 +453,8 @@ export default function ImageEditor() {
                         <div
                           key={layer.id}
                           className={cn(
-                            "p-3 flex items-center gap-3 cursor-move",
-                            selectedObject === layer.object && "bg-accent"
+                            "p-3 flex items-center gap-3 cursor-pointer select-none",
+                            (selectedLayer?.id === layer.id || selectedObject === layer.object) && "bg-accent"
                           )}
                           draggable
                           onDragStart={(e) => {
@@ -424,10 +468,7 @@ export default function ImageEditor() {
                             const startIndex = parseInt(e.dataTransfer.getData('text/plain'))
                             reorderLayers(startIndex, index)
                           }}
-                          onClick={() => {
-                            fabricRef.current?.setActiveObject(layer.object)
-                            fabricRef.current?.renderAll()
-                          }}
+                          onClick={() => handleLayerClick(layer)}
                         >
                           {layer.type === 'image' ? (
                             <FileImage className="h-4 w-4" />
@@ -443,6 +484,10 @@ export default function ImageEditor() {
                               e.stopPropagation()
                               fabricRef.current?.remove(layer.object)
                               setLayers(prev => prev.filter(l => l.id !== layer.id))
+                              if (selectedLayer?.id === layer.id) {
+                                setSelectedLayer(null)
+                                setSelectedObject(null)
+                              }
                             }}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -535,6 +580,8 @@ export default function ImageEditor() {
     </div>
   )
 }
+
+
 
 
 
