@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light blue theme with #F2F8FC background */
+    --background: 204 80% 97%; /* #F2F8FC */
+    --foreground: 226 43% 25%; /* #23325A - Dark blue text as requested */
+
+    --card: 0 0% 100%; /* White card background */
+    --card-foreground: 226 43% 25%; /* Same as foreground */
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 226 43% 25%;
+
+    --primary: 210 80% 45%; /* #1976D2 - Medium blue */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
+
+    --secondary: 200 60% 92%; /* #D6EBF7 - Lighter blue */
+    --secondary-foreground: 210 60% 30%; /* #1D4974 - Darker blue text */
+
+    --muted: 204 30% 92%; /* #E4EFF7 - Very light blue */
+    --muted-foreground: 210 30% 45%; /* #6B8CAD - Muted blue text */
+
+    --accent: 200 80% 92%; /* #D0EAF9 - Accent light blue */
+    --accent-foreground: 210 70% 35%; /* #1E4D82 - Accent text */
+
+    --destructive: 0 84.2% 60.2%; /* Red for destructive actions */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 204 30% 85%; /* #C7DEF0 - Light blue border */
+    --input: 204 30% 85%;
+    --ring: 210 80% 45%; /* Same as primary */
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark theme complementary to the light blue theme */
+    --background: 214 50% 15%; /* #152A42 - Dark blue background */
+    --foreground: 204 30% 90%; /* #D9EAF5 - Light blue text */
+
+    --card: 214 45% 20%; /* #1D3654 - Slightly lighter dark blue */
+    --card-foreground: 204 30% 90%;
+
+    --popover: 214 45% 20%;
+    --popover-foreground: 204 30% 90%;
+
+    --primary: 210 80% 60%; /* #4A9CED - Bright blue */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 214 40% 30%; /* #2A4A70 - Medium dark blue */
+    --secondary-foreground: 204 30% 90%;
+
+    --muted: 214 30% 25%; /* #243E5F - Muted dark blue */
+    --muted-foreground: 204 20% 70%; /* #A7C7DB - Muted light blue text */
+
+    --accent: 210 50% 35%; /* #2A5A8C - Accent dark blue */
+    --accent-foreground: 204 30% 90%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 204 30% 90%;
+
+    --border: 214 30% 30%; /* #2A4A70 - Dark blue border */
+    --input: 214 30% 30%;
+    --ring: 210 80% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
