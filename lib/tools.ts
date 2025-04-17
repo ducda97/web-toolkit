@@ -12,6 +12,7 @@ import {
   FileJson,
   QrCode,
   GitCompare,
+  Crop,
 } from "lucide-react"
 
 export interface Tool {
@@ -30,6 +31,14 @@ export interface ToolCategory {
 }
 
 const imageTools: Tool[] = [
+  {
+    id: "image-cropper",
+    name: "Image Cropper",
+    description: "Crop and adjust images easily",
+    icon: Crop,
+    features: ["Free-form crop", "Aspect ratio presets", "Preview & download"],
+    category: "image",
+  },
   {
     id: "image-converter",
     name: "Image Format Converter",
@@ -173,3 +182,4 @@ export const allTools = toolCategories.flatMap((category) => category.tools)
 export function getToolById(id: string): Tool | undefined {
   return allTools.find((tool) => tool.id === id)
 }
+

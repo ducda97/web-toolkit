@@ -14,6 +14,7 @@ import TextDiff from "@/components/tools/text-diff"
 import UrlEncoder from "@/components/tools/url-encoder"
 import JsonFormatter from "@/components/tools/json-formatter"
 import QrGenerator from "@/components/tools/qr-generator"
+import ImageCropper from "@/components/tools/image-cropper"
 
 export const dynamic = 'force-dynamic'
 
@@ -27,6 +28,7 @@ export default async function ToolPage({ params }: { params: { toolId: string } 
   const toolComponents: Record<string, React.ReactNode> = {
     "image-converter": <ImageConverter />,
     "image-resize": <ImageResizer />,
+    "image-cropper": <ImageCropper />,
     "color-converter": <ColorConverter />,
     "code-formatter": <CodeFormatter />,
     "code-minifier": <CodeMinifier />,
@@ -61,4 +63,5 @@ export default async function ToolPage({ params }: { params: { toolId: string } 
     </div>
   )
 }
+
 

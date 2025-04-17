@@ -3,7 +3,7 @@ import { Github, Mail } from "lucide-react"
 
 export default function Footer() {
   return (
-    <footer className="border-t py-6 md:py-8 bg-card">
+    <footer className="border-t py-4 md:py-4 bg-card">
       <div className="container flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
         <div className="text-sm text-muted-foreground">
           <p>© {new Date().getFullYear()} WebToolkit. All rights reserved.</p>
