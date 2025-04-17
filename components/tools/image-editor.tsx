@@ -497,6 +497,18 @@ export default function ImageEditor() {
                   </div>
                 </div>
               </div>
+
+              {/* Add Download button at the bottom */}
+              <div className="pt-4 border-t">
+                <Button 
+                  onClick={handleDownload} 
+                  className="w-full flex items-center justify-center gap-2"
+                  variant="default"
+                >
+                  <Download className="h-4 w-4" />
+                  Download Image
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -505,12 +517,12 @@ export default function ImageEditor() {
       <div className="col-span-9">
         <div 
           ref={containerRef}
-          className="w-full h-[calc(100vh-2rem)] bg-accent/10 rounded-lg flex items-center justify-center"
+          className="w-full h-[calc(100vh-2rem)] bg-accent/10 rounded-lg flex items-start justify-center"
         >
           <div 
             style={{
               transform: `scale(${scale})`,
-              transformOrigin: 'center',
+              transformOrigin: 'top',
               width: canvasSize.width,
               height: canvasSize.height,
             }}
@@ -523,6 +535,7 @@ export default function ImageEditor() {
     </div>
   )
 }
+
 
 
 
