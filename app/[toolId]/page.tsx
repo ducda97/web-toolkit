@@ -15,6 +15,7 @@ import UrlEncoder from "@/components/tools/url-encoder"
 import JsonFormatter from "@/components/tools/json-formatter"
 import QrGenerator from "@/components/tools/qr-generator"
 import ImageCropper from "@/components/tools/image-cropper"
+import ImageFilter from "@/components/tools/image-filter"
 
 export const dynamic = 'force-dynamic'
 
@@ -29,6 +30,7 @@ export default async function ToolPage({ params }: { params: { toolId: string } 
     "image-converter": <ImageConverter />,
     "image-resize": <ImageResizer />,
     "image-cropper": <ImageCropper />,
+    "image-filter": <ImageFilter />,
     "color-converter": <ColorConverter />,
     "code-formatter": <CodeFormatter />,
     "code-minifier": <CodeMinifier />,
@@ -63,5 +65,6 @@ export default async function ToolPage({ params }: { params: { toolId: string } 
     </div>
   )
 }
+
 
 

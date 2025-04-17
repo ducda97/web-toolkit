@@ -13,6 +13,7 @@ import {
   QrCode,
   GitCompare,
   Crop,
+  Sliders,
 } from "lucide-react"
 
 export interface Tool {
@@ -61,6 +62,14 @@ const imageTools: Tool[] = [
     description: "Convert colors between different formats",
     icon: Palette,
     features: ["HEX, RGB, HSL", "Color picker", "Color preview"],
+    category: "image",
+  },
+  {
+    id: "image-filter",
+    name: "Image Filter",
+    description: "Apply filters and adjust image properties",
+    icon: Sliders,
+    features: ["Brightness", "Contrast", "Saturation", "Blur", "Preset filters"],
     category: "image",
   },
 ]
@@ -182,4 +191,5 @@ export const allTools = toolCategories.flatMap((category) => category.tools)
 export function getToolById(id: string): Tool | undefined {
   return allTools.find((tool) => tool.id === id)
 }
+
 
