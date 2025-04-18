@@ -15,6 +15,7 @@ import {
   Crop,
   Sliders,
   ImagePlus,
+  Scissors,
 } from "lucide-react"
 
 export interface Tool {
@@ -172,6 +173,17 @@ const webTools: Tool[] = [
   },
 ]
 
+const audioTools: Tool[] = [
+  {
+    id: "audio-cutter",
+    name: "Audio Cutter",
+    description: "Cut and trim audio files easily",
+    icon: Scissors,
+    features: ["MP3, WAV support", "Precise timing", "Preview audio", "Download trimmed file"],
+    category: "audio",
+  },
+]
+
 export const toolCategories: ToolCategory[] = [
   {
     id: "image",
@@ -192,6 +204,11 @@ export const toolCategories: ToolCategory[] = [
     id: "web",
     name: "Web Tools",
     tools: webTools,
+  },
+  {
+    id: "audio",
+    name: "Audio Tools",
+    tools: audioTools,
   },
 ]
 

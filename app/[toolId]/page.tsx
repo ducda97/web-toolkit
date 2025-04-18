@@ -1,6 +1,7 @@
 import type React from "react"
 import { notFound } from "next/navigation"
 import { getToolById } from "@/lib/tools"
+import AudioCutter from "@/components/tools/audio-cutter"
 import ImageConverter from "@/components/tools/image-converter"
 import ImageResizer from "@/components/tools/image-resizer"
 import ColorConverter from "@/components/tools/color-converter"
@@ -44,6 +45,7 @@ export default async function ToolPage({ params }: { params: { toolId: string } 
     "json-formatter": <JsonFormatter />,
     "qr-generator": <QrGenerator />,
     "image-editor": <ImageEditor />,
+    "audio-cutter": <AudioCutter />,
   }
 
   const ToolComponent = toolComponents[tool.id]
