@@ -1,196 +1,427 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Upload, Download, Play, Pause, Scissors } from "lucide-react"
+import { Upload, Download, Play, Pause, Scissors, Music } from "lucide-react"
+import WaveSurfer from "wavesurfer.js"
+import RegionsPlugin from "wavesurfer.js/dist/plugins/regions"
+import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { RangeSlider } from "@/components/ui/range-slider"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { toast } from "sonner"
+
+interface EQBand {
+  frequency: number;
+  gain: number;
+}
+
+interface EQVisualizerProps {
+  bands: EQBand[];
+  onChange: (bands: EQBand[]) => void;
+}
+
+const EQVisualizer = ({ bands, onChange }: EQVisualizerProps) => {
+  const handleGainChange = (frequency: number, newGain: number) => {
+    const newBands = bands.map(band => 
+      band.frequency === frequency ? { ...band, gain: newGain } : band
+    );
+    onChange(newBands);
+  };
+
+  return (
+    <div className="grid grid-cols-10 gap-2 p-4 bg-muted/30 rounded-lg">
+      {bands.map((band) => (
+        <div key={band.frequency} className="flex flex-col items-center gap-2">
+          <input
+            type="range"
+            min="-12"
+            max="12"
+            step="0.5"
+            value={band.gain}
+            className="h-32 -rotate-90"
+            onChange={(e) => handleGainChange(band.frequency, parseFloat(e.target.value))}
+          />
+          <div className="text-xs text-center">
+            <div>{band.gain > 0 ? `+${band.gain}` : band.gain}dB</div>
+            <div>{band.frequency < 1000 ? band.frequency : `${band.frequency/1000}k`}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const EQ_PRESETS = {
+  normal: {
+    bands: [
+      { frequency: 32, gain: 0 },
+      { frequency: 64, gain: 0 },
+      { frequency: 125, gain: 0 },
+      { frequency: 250, gain: 0 },
+      { frequency: 500, gain: 0 },
+      { frequency: 1000, gain: 0 },
+      { frequency: 2000, gain: 0 },
+      { frequency: 4000, gain: 0 },
+      { frequency: 8000, gain: 0 },
+      { frequency: 16000, gain: 0 }
+    ]
+  },
+  club: {
+    bands: [
+      { frequency: 32, gain: 0 },
+      { frequency: 64, gain: 0 },
+      { frequency: 125, gain: 8 },
+      { frequency: 250, gain: 5.5 },
+      { frequency: 500, gain: 5.5 },
+      { frequency: 1000, gain: 5.5 },
+      { frequency: 2000, gain: 3 },
+      { frequency: 4000, gain: 0 },
+      { frequency: 8000, gain: 0 },
+      { frequency: 16000, gain: 0 }
+    ]
+  },
+  dance: {
+    bands: [
+      { frequency: 32, gain: 10 },
+      { frequency: 64, gain: 7 },
+      { frequency: 125, gain: 2 },
+      { frequency: 250, gain: 0 },
+      { frequency: 500, gain: 0 },
+      { frequency: 1000, gain: -5.5 },
+      { frequency: 2000, gain: -7 },
+      { frequency: 4000, gain: -7 },
+      { frequency: 8000, gain: 0 },
+      { frequency: 16000, gain: 0 }
+    ]
+  },
+  rock: {
+    bands: [
+      { frequency: 32, gain: 8 },
+      { frequency: 64, gain: 5 },
+      { frequency: 125, gain: -5 },
+      { frequency: 250, gain: -8 },
+      { frequency: 500, gain: -3 },
+      { frequency: 1000, gain: 4 },
+      { frequency: 2000, gain: 8 },
+      { frequency: 4000, gain: 11 },
+      { frequency: 8000, gain: 11 },
+      { frequency: 16000, gain: 11 }
+    ]
+  },
+  pop: {
+    bands: [
+      { frequency: 32, gain: -1.5 },
+      { frequency: 64, gain: -1.5 },
+      { frequency: 125, gain: 0 },
+      { frequency: 250, gain: 4 },
+      { frequency: 500, gain: 7 },
+      { frequency: 1000, gain: 7 },
+      { frequency: 2000, gain: 4 },
+      { frequency: 4000, gain: 2 },
+      { frequency: 8000, gain: 1.5 },
+      { frequency: 16000, gain: 1.5 }
+    ]
+  },
+  classical: {
+    bands: [
+      { frequency: 32, gain: 0 },
+      { frequency: 64, gain: 0 },
+      { frequency: 125, gain: 0 },
+      { frequency: 250, gain: 0 },
+      { frequency: 500, gain: 0 },
+      { frequency: 1000, gain: 0 },
+      { frequency: 2000, gain: -6 },
+      { frequency: 4000, gain: -6 },
+      { frequency: 8000, gain: -6 },
+      { frequency: 16000, gain: -8 }
+    ]
+  },
+  bass: {
+    bands: [
+      { frequency: 32, gain: 10 },
+      { frequency: 64, gain: 10 },
+      { frequency: 125, gain: 10 },
+      { frequency: 250, gain: 6 },
+      { frequency: 500, gain: 4 },
+      { frequency: 1000, gain: 0 },
+      { frequency: 2000, gain: 0 },
+      { frequency: 4000, gain: 0 },
+      { frequency: 8000, gain: 0 },
+      { frequency: 16000, gain: 0 }
+    ]
+  },
+  treble: {
+    bands: [
+      { frequency: 32, gain: 0 },
+      { frequency: 64, gain: 0 },
+      { frequency: 125, gain: 0 },
+      { frequency: 250, gain: 0 },
+      { frequency: 500, gain: 0 },
+      { frequency: 1000, gain: 4 },
+      { frequency: 2000, gain: 6 },
+      { frequency: 4000, gain: 8 },
+      { frequency: 8000, gain: 10 },
+      { frequency: 16000, gain: 12 }
+    ]
+  }
+}
+
+const AUDIO_EFFECTS = {
+  none: { gain: 1, speed: 1, eq: EQ_PRESETS.normal },
+  nightcore: { gain: 1, speed: 1.3, eq: EQ_PRESETS.pop },
+  vaporwave: { gain: 1, speed: 0.7, eq: EQ_PRESETS.bass },
+  club: { gain: 1, speed: 1, eq: EQ_PRESETS.club },
+  dance: { gain: 1, speed: 1, eq: EQ_PRESETS.dance },
+  rock: { gain: 1, speed: 1, eq: EQ_PRESETS.rock },
+  pop: { gain: 1, speed: 1, eq: EQ_PRESETS.pop },
+  classical: { gain: 1, speed: 1, eq: EQ_PRESETS.classical },
+  bass: { gain: 1, speed: 1, eq: EQ_PRESETS.bass },
+  treble: { gain: 1, speed: 1, eq: EQ_PRESETS.treble }
+}
+
+let currentFilters: BiquadFilterNode[] = []
 
 export default function AudioCutter() {
   const [audioFile, setAudioFile] = useState<File | null>(null)
-  const [audioUrl, setAudioUrl] = useState<string>("")
-  const [duration, setDuration] = useState<number>(0)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [timeRange, setTimeRange] = useState<[number, number]>([0, 0])
+  const [currentEffect, setCurrentEffect] = useState("none")
   const [error, setError] = useState<string>("")
-  const [isDragging, setIsDragging] = useState(false)
-
-  const audioRef = useRef<HTMLAudioElement>(null)
+  
+  const waveformRef = useRef<HTMLDivElement>(null)
+  const wavesurferRef = useRef<WaveSurfer | null>(null)
+  const regionsRef = useRef<any>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const progressBarRef = useRef<HTMLDivElement>(null)
+  const activeRegion = useRef<any>(null)
 
-  // Clean up URL when component unmounts
   useEffect(() => {
-    return () => {
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl)
+    if (waveformRef.current) {
+      // Initialize WaveSurfer
+      const wavesurfer = WaveSurfer.create({
+        container: waveformRef.current,
+        waveColor: '#4F46E5',
+        progressColor: '#818CF8',
+        cursorColor: '#C7D2FE',
+        height: 128,
+        normalize: true,
+        plugins: [
+          TimelinePlugin.create(),
+          RegionsPlugin.create()
+        ]
+      })
+
+      wavesurferRef.current = wavesurfer
+
+      // Event listeners
+      wavesurfer.on('ready', () => {
+        const regions = (wavesurfer as any).plugins.regions
+        const region = regions.addRegion({
+          start: 0,
+          end: wavesurfer.getDuration(),
+          color: 'rgba(79, 70, 229, 0.2)',
+          drag: true,
+          resize: true
+        })
+        activeRegion.current = region
+        regionsRef.current = regions
+      })
+
+      wavesurfer.on('play', () => setIsPlaying(true))
+      wavesurfer.on('pause', () => setIsPlaying(false))
+      wavesurfer.on('finish', () => setIsPlaying(false))
+
+      // Cleanup
+      return () => {
+        wavesurfer.destroy()
       }
     }
-  }, [audioUrl])
+  }, [])
 
-  // Update progress bar position
-  useEffect(() => {
-    if (!isDragging && audioRef.current && progressBarRef.current) {
-      const progress = (currentTime / duration) * 100
-      progressBarRef.current.style.width = `${progress}%`
-    }
-  }, [currentTime, duration, isDragging])
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file) {
+      console.log("No file selected")
+      return
+    }
 
     if (!file.type.startsWith('audio/')) {
+      console.log("Invalid file type:", file.type)
       setError("Please select an audio file")
       return
     }
 
-    setAudioFile(file)
-    const url = URL.createObjectURL(file)
-    setAudioUrl(url)
-    setError("")
+    try {
+      console.log("Processing file:", file.name)
+      setAudioFile(file)
+      setError("")
 
-    // Reset states
-    setCurrentTime(0)
-    setIsPlaying(false)
-    setTimeRange([0, 0])
-  }
-
-  const handleLoadedMetadata = () => {
-    if (audioRef.current) {
-      const audioDuration = audioRef.current.duration
-      setDuration(audioDuration)
-      setTimeRange([0, audioDuration])
-    }
-  }
-
-  const handleTimeUpdate = () => {
-    if (audioRef.current && !isDragging) {
-      const time = audioRef.current.currentTime
-      setCurrentTime(time)
-      
-      // Khi đến cuối range, quay lại điểm start và dừng
-      if (time >= timeRange[1]) {
-        audioRef.current.pause()
-        audioRef.current.currentTime = timeRange[0]
-        setIsPlaying(false)
+      if (!waveformRef.current) {
+        console.error("Waveform container not found")
+        return
       }
-    }
-  }
 
-  const handleProgressBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!audioRef.current) return
+      // Always destroy existing instance
+      if (wavesurferRef.current) {
+        console.log("Destroying existing wavesurfer instance")
+        wavesurferRef.current.destroy()
+      }
 
-    const bounds = e.currentTarget.getBoundingClientRect()
-    const x = e.clientX - bounds.left
-    const width = bounds.width
-    const percentage = x / width
-    const newTime = percentage * duration
+      // Create RegionsPlugin instance
+      const regionsPlugin = RegionsPlugin.create()
 
-    // Only update if within the selected range
-    if (newTime >= timeRange[0] && newTime <= timeRange[1]) {
-      audioRef.current.currentTime = newTime
-      setCurrentTime(newTime)
+      console.log("Creating new wavesurfer instance")
+      const wavesurfer = WaveSurfer.create({
+        container: waveformRef.current,
+        waveColor: '#4F46E5',
+        progressColor: '#818CF8',
+        cursorColor: '#C7D2FE',
+        height: 128,
+        normalize: true,
+        plugins: [
+          TimelinePlugin.create(),
+          regionsPlugin
+        ]
+      })
+
+      // Store the new instance
+      wavesurferRef.current = wavesurfer
+      regionsRef.current = regionsPlugin
+
+      // Set up event listeners before loading the file
+      wavesurfer.on('ready', () => {
+        console.log("Wavesurfer is ready")
+        
+        try {
+          const region = regionsPlugin.addRegion({
+            start: 0,
+            end: wavesurfer.getDuration(),
+            color: 'rgba(79, 70, 229, 0.2)',
+            drag: true,
+            resize: true
+          })
+          activeRegion.current = region
+          console.log("Region created:", region)
+          console.log("Audio duration:", wavesurfer.getDuration())
+        } catch (err) {
+          console.error("Error creating region:", err)
+        }
+      })
+
+      wavesurfer.on('error', (error) => {
+        console.error("Wavesurfer error:", error)
+        setError("Error loading audio file")
+      })
+
+      // Load the file
+      console.log("Loading audio file")
+      const arrayBuffer = await file.arrayBuffer()
+      await wavesurfer.loadBlob(new Blob([arrayBuffer]))
+      
+      console.log("Audio file loaded successfully")
+      toast.success("Audio loaded successfully!")
+
+    } catch (err) {
+      console.error("Error in handleFileChange:", err)
+      setError("Failed to load audio file")
+      toast.error("Failed to load audio file")
     }
   }
 
   const togglePlayPause = () => {
-    if (!audioRef.current) return
-
-    if (isPlaying) {
-      audioRef.current.pause()
-    } else {
-      // Nếu vị trí hiện tại nằm ngoài range, bắt đầu từ điểm start
-      if (currentTime < timeRange[0] || currentTime > timeRange[1]) {
-        audioRef.current.currentTime = timeRange[0]
-        setCurrentTime(timeRange[0])
-      }
-      audioRef.current.play()
-    }
-    setIsPlaying(!isPlaying)
+    if (!wavesurferRef.current) return
+    wavesurferRef.current.playPause()
   }
 
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60)
-    const seconds = Math.floor(time % 60)
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`
-  }
-
-  const handleRangeChange = (values: number[]) => {
-    setTimeRange([values[0], values[1]])
+  const handleEffectChange = (value: string) => {
+    if (!wavesurferRef.current) return
     
-    if (audioRef.current) {
-      // Luôn cập nhật vị trí phát về điểm start mới khi kéo điểm start
-      if (values[0] !== timeRange[0]) {
-        audioRef.current.currentTime = values[0]
-        setCurrentTime(values[0])
-      }
-      // Nếu đang phát và vị trí hiện tại vượt quá end point mới
-      else if (isPlaying && audioRef.current.currentTime > values[1]) {
-        audioRef.current.currentTime = values[0]
-        setCurrentTime(values[0])
-      }
-    }
-  }
-
-  const handleRangeChangeStart = () => {
-    setIsDragging(true)
-  }
-
-  const handleRangeChangeEnd = () => {
-    setIsDragging(false)
+    setCurrentEffect(value)
+    const effect = AUDIO_EFFECTS[value as keyof typeof AUDIO_EFFECTS]
+    
+    // Apply effect
+    wavesurferRef.current.setPlaybackRate(effect.speed)
+    // You can add more audio effects here using Web Audio API
   }
 
   const handleCutAudio = async () => {
-    if (!audioFile) return
+    if (!audioFile || !wavesurferRef.current || !activeRegion.current) return
 
     try {
-      // Here you would implement the actual audio cutting logic
-      // This is a placeholder for the actual implementation
-      const audioContext = new AudioContext()
-      const audioBuffer = await audioFile.arrayBuffer()
-      const decodedBuffer = await audioContext.decodeAudioData(audioBuffer)
+      const region = activeRegion.current
+      const originalBuffer = wavesurferRef.current.getDecodedData()
       
-      // Calculate start and end samples
-      const sampleRate = decodedBuffer.sampleRate
-      const startSample = Math.floor(timeRange[0] * sampleRate)
-      const endSample = Math.floor(timeRange[1] * sampleRate)
+      if (!originalBuffer) {
+        throw new Error("No audio data available")
+      }
+
+      // Create new AudioContext
+      const audioContext = new AudioContext()
+      
+      // Calculate region duration
+      const startSample = Math.floor(region.start * originalBuffer.sampleRate)
+      const endSample = Math.floor(region.end * originalBuffer.sampleRate)
+      const newLength = endSample - startSample
       
       // Create new buffer for the cut portion
-      const cutLength = endSample - startSample
       const newBuffer = audioContext.createBuffer(
-        decodedBuffer.numberOfChannels,
-        cutLength,
-        sampleRate
+        originalBuffer.numberOfChannels,
+        newLength,
+        originalBuffer.sampleRate
       )
       
-      // Copy the portion we want to keep
-      for (let channel = 0; channel < decodedBuffer.numberOfChannels; channel++) {
-        const channelData = decodedBuffer.getChannelData(channel)
+      // Copy the selected portion
+      for (let channel = 0; channel < originalBuffer.numberOfChannels; channel++) {
+        const channelData = originalBuffer.getChannelData(channel)
         const newChannelData = newBuffer.getChannelData(channel)
-        for (let i = 0; i < cutLength; i++) {
+        for (let i = 0; i < newLength; i++) {
           newChannelData[i] = channelData[startSample + i]
         }
       }
       
-      // Convert to wav/mp3 and trigger download
-      // This is simplified - you'd want to use a proper audio encoding library
-      const blob = await audioBufferToWav(newBuffer)
-      const url = URL.createObjectURL(blob)
-      
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `cut_${audioFile.name}`
-      a.click()
-      
-      URL.revokeObjectURL(url)
+      // Apply selected effect
+      const effect = AUDIO_EFFECTS[currentEffect as keyof typeof AUDIO_EFFECTS]
+      if (effect.speed !== 1) {
+        // Implement pitch shifting here if needed
+        // This is a simplified version that only changes speed
+        const pitchBuffer = audioContext.createBuffer(
+          newBuffer.numberOfChannels,
+          Math.floor(newBuffer.length / effect.speed),
+          newBuffer.sampleRate
+        )
+        
+        for (let channel = 0; channel < newBuffer.numberOfChannels; channel++) {
+          const channelData = newBuffer.getChannelData(channel)
+          const pitchChannelData = pitchBuffer.getChannelData(channel)
+          for (let i = 0; i < pitchBuffer.length; i++) {
+            pitchChannelData[i] = channelData[Math.floor(i * effect.speed)]
+          }
+        }
+        
+        // Convert to wav and download
+        const blob = await audioBufferToWav(pitchBuffer)
+        downloadBlob(blob, `${currentEffect}_${audioFile.name}`)
+      } else {
+        // Convert to wav and download without effects
+        const blob = await audioBufferToWav(newBuffer)
+        downloadBlob(blob, `cut_${audioFile.name}`)
+      }
+
+      toast.success("Audio successfully exported!")
     } catch (err) {
-      setError("Failed to cut audio file")
+      setError("Failed to process audio file")
       console.error(err)
+      toast.error("Failed to process audio file")
     }
+  }
+
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
@@ -198,6 +429,7 @@ export default function AudioCutter() {
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-4">
+            {/* Upload Button */}
             <div>
               <Label>Upload Audio</Label>
               <div className="mt-2">
@@ -219,81 +451,60 @@ export default function AudioCutter() {
               </div>
             </div>
 
+            {/* Error Message */}
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
-            {audioUrl && (
+            {/* Waveform Container - Always render this */}
+            <div 
+              ref={waveformRef} 
+              className="w-full h-32 border rounded-md bg-white" 
+              style={{ minHeight: '128px' }}
+            />
+
+            {/* Audio Controls - Show only when audio is loaded */}
+            {audioFile && (
               <div className="space-y-6">
-                <audio
-                  ref={audioRef}
-                  src={audioUrl}
-                  onLoadedMetadata={handleLoadedMetadata}
-                  onTimeUpdate={handleTimeUpdate}
-                  onEnded={() => setIsPlaying(false)}
-                />
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Start: {formatTime(timeRange[0])}</span>
-                    <span>Current: {formatTime(currentTime)}</span>
-                    <span>End: {formatTime(timeRange[1])}</span>
-                  </div>
-
-                  {/* Progress bar */}
-                  <div 
-                    className="h-2 bg-gray-200 rounded-full cursor-pointer relative"
-                    onClick={handleProgressBarClick}
+                <div className="flex items-center gap-4">
+                  <Button
+                    onClick={togglePlayPause}
+                    variant="outline"
+                    size="sm"
+                    className="w-24"
                   >
-                    <div 
-                      ref={progressBarRef}
-                      className="h-full bg-blue-500 rounded-full relative"
-                    >
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-700 rounded-full"></div>
-                    </div>
-                  </div>
+                    {isPlaying ? (
+                      <>
+                        <Pause className="h-4 w-4 mr-2" />
+                        Pause
+                      </>
+                    ) : (
+                      <>
+                        <Play className="h-4 w-4 mr-2" />
+                        Play
+                      </>
+                    )}
+                  </Button>
 
-                  {/* Range slider */}
-                  <RangeSlider
-                    min={0}
-                    max={duration}
-                    step={0.1}
-                    value={timeRange}
-                    onValueChange={handleRangeChange}
-                    onDragStart={handleRangeChangeStart}
-                    onValueCommit={handleRangeChangeEnd}
-                    className="my-4"
-                  />
+                  <Select value={currentEffect} onValueChange={handleEffectChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose effect" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.keys(AUDIO_EFFECTS).map((effect) => (
+                        <SelectItem key={effect} value={effect}>
+                          {effect.charAt(0).toUpperCase() + effect.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                  <div className="flex justify-between">
-                    <Button
-                      onClick={togglePlayPause}
-                      variant="outline"
-                      size="sm"
-                      className="w-24"
-                    >
-                      {isPlaying ? (
-                        <>
-                          <Pause className="h-4 w-4 mr-2" />
-                          Pause
-                        </>
-                      ) : (
-                        <>
-                          <Play className="h-4 w-4 mr-2" />
-                          Play
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      onClick={handleCutAudio}
-                      className="w-24"
-                    >
-                      <Scissors className="h-4 w-4 mr-2" />
-                      Cut
-                    </Button>
-                  </div>
+                  <Button onClick={handleCutAudio} variant="outline" size="sm">
+                    <Scissors className="h-4 w-4 mr-2" />
+                    Cut
+                  </Button>
                 </div>
               </div>
             )}
@@ -351,8 +562,3 @@ function writeString(view: DataView, offset: number, string: string) {
     view.setUint8(offset + i, string.charCodeAt(i))
   }
 }
-
-
-
-
-
