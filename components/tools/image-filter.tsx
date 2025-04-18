@@ -23,19 +23,17 @@ function PresetThumbnail({ src, preset, filters, isSelected, onClick }: PresetTh
   if (!src) return null
 
   const getPresetStyle = () => {
-    const brightness = filters.brightness
-    const contrast = filters.contrast
-    const saturate = filters.saturate
-    const sepia = filters.sepia
-    const hueRotate = filters['hue-rotate']
-
     return {
       filter: `
-        brightness(${brightness}%)
-        contrast(${contrast}%)
-        saturate(${saturate}%)
-        sepia(${sepia}%)
-        hue-rotate(${hueRotate})
+        brightness(${filters.brightness}%)
+        contrast(${filters.contrast}%)
+        saturate(${filters.saturate}%)
+        sepia(${filters.sepia}%)
+        hue-rotate(${filters['hue-rotate']})
+        blur(${filters.blur}px)
+        invert(${filters.invert}%)
+        opacity(${filters.opacity}%)
+        grayscale(${filters.grayscale}%)
       `
     }
   }
@@ -43,8 +41,9 @@ function PresetThumbnail({ src, preset, filters, isSelected, onClick }: PresetTh
   return (
     <button
       onClick={onClick}
-      className={`relative group p-1 rounded-lg transition-all ${isSelected ? 'ring-2 ring-primary' : 'hover:ring-2 hover:ring-primary/50'
-        }`}
+      className={`relative group p-1 rounded-lg transition-all ${
+        isSelected ? 'ring-2 ring-primary' : 'hover:ring-2 hover:ring-primary/50'
+      }`}
     >
       <img
         src={src}
@@ -134,17 +133,6 @@ const PRESET_FILTERS = {
     invert: 0,
     opacity: 100,
     grayscale: 0
-  },
-  grayscale: {
-    brightness: 100,
-    contrast: 110,
-    saturate: 100,
-    sepia: 0,
-    'hue-rotate': '0deg',
-    blur: 0,
-    invert: 0,
-    opacity: 100,
-    grayscale: 100
   },
   sepia: {
     brightness: 95,
@@ -566,7 +554,7 @@ export default function ImageFilter() {
     setContrast(filters.contrast)
     setSaturate(filters.saturate)
     setSepia(filters.sepia)
-    setHueRotate(parseInt(filters['hue-rotate']))
+    setHueRotate(parseInt(filters['hue-rotate'])) // Chỉ lấy số, bỏ 'deg'
     setBlur(filters.blur)
     setInvert(filters.invert)
     setOpacity(filters.opacity)
@@ -580,8 +568,12 @@ export default function ImageFilter() {
         brightness,
         contrast,
         saturate,
-        sepia: 0,
-        'hue-rotate': '0deg'
+        sepia,
+        'hue-rotate': `${hueRotate}deg`,
+        blur,
+        invert,
+        opacity,
+        grayscale
       }
 
     return {
@@ -591,12 +583,10 @@ export default function ImageFilter() {
         saturate(${filters.saturate}%)
         sepia(${filters.sepia}%)
         hue-rotate(${filters['hue-rotate']})
-        blur(${blur}px)
-        sepia(${sepia}%)
-        hue-rotate(${hueRotate}deg)
-        invert(${invert}%)
-        opacity(${opacity}%)
-        grayscale(${grayscale}%)
+        blur(${filters.blur}px)
+        invert(${filters.invert}%)
+        opacity(${filters.opacity}%)
+        grayscale(${filters.grayscale}%)
       `
     }
   }

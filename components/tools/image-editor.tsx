@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Upload, Download, Trash2, Type, Move, Bold, Italic, Underline, FileImage } from "lucide-react"
+import { Upload, Download, Trash2, Type, Move, Bold, Italic, Underline, FileImage, Minus, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -33,7 +33,6 @@ const CANVAS_PRESETS = {
   "facebook_cover": { name: "Facebook Cover", width: 1640, height: 924 },
   "facebook_post": { name: "Facebook Post", width: 1200, height: 630 },
   "instagram_post": { name: "Instagram Post", width: 1080, height: 1080 },
-  "instagram_story": { name: "Instagram Story", width: 1080, height: 1920 },
   "twitter_header": { name: "Twitter Header", width: 1500, height: 500 },
   "youtube_thumbnail": { name: "YouTube Thumbnail", width: 1280, height: 720 },
   "desktop_wallpaper": { name: "Desktop Wallpaper", width: 1920, height: 1080 },
@@ -61,44 +60,82 @@ export default function ImageEditor() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
   const [selectedLayer, setSelectedLayer] = useState<Layer | null>(null)
+  const [zoom, setZoom] = useState(1)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
 
-  // Thêm hàm tính toán scale
-  const calculateScale = (containerWidth: number, containerHeight: number) => {
-    const padding = 7 // padding để canvas không sát viền
+  // Thêm hàm tính toán scale để vừa màn hình
+  const calculateInitialScale = (containerWidth: number, containerHeight: number) => {
+    const padding = 16 // padding mỗi bên 16px
     const maxWidth = containerWidth - padding
     const maxHeight = containerHeight - padding
     
-    const scaleX = maxWidth / canvasSize.width
-    const scaleY = maxHeight / canvasSize.height
+    // Tính scale dựa trên cả width và height
+    const scaleX = (maxWidth / canvasSize.width) 
+    const scaleY = (maxHeight / canvasSize.height) < 0.6 ? 0.6 : maxHeight / canvasSize.height 
     
-    // Chọn scale nhỏ hơn để đảm bảo canvas vừa khung
+    console.log('scaleX',scaleX);
+    console.log('scaleY',scaleY);
+
+    
+    // Chọn scale nhỏ hơn để đảm bảo canvas vừa khung theo cả 2 chiều
     return Math.min(scaleX, scaleY)
   }
 
-  // Thêm useEffect để theo dõi kích thước container
-  useEffect(() => {
-    const updateScale = () => {
-      if (containerRef.current) {
-        const newScale = calculateScale(
-          containerRef.current.clientWidth,
-          containerRef.current.clientHeight
-        )
-        setScale(newScale)
-      }
-    }
+  // Thêm hàm để tính max zoom dựa trên kích thước container
+  const calculateMaxZoom = () => {
+    if (!containerRef.current) return 2
+    const { clientWidth, clientHeight } = containerRef.current
+    const padding = 16
+    const maxWidth = clientWidth - padding
+    const maxHeight = clientHeight - padding
+    
+    const maxScaleX = maxWidth / (canvasSize.width - 50)
+    const maxScaleY = maxHeight / (canvasSize.height - 50)
+    
+    return Math.min(maxScaleX, maxScaleY)
+  }
 
-    updateScale()
-    window.addEventListener('resize', updateScale)
-    return () => window.removeEventListener('resize', updateScale)
+  // Cập nhật useEffect để tính lại scale khi kích thước canvas thay đổi
+  useEffect(() => {
+    if (containerRef.current) {
+      const initialScale = calculateInitialScale(
+        containerRef.current.clientWidth,
+        containerRef.current.clientHeight
+      )
+      setZoom(initialScale)
+      // Reset pan position
+      setPan({ x: 0, y: 0 })
+    }
   }, [canvasSize.width, canvasSize.height])
 
   useEffect(() => {
     if (canvasRef.current) {
+      // Lấy DPI ratio của màn hình
+      const dpi = window.devicePixelRatio || 1
+
       fabricRef.current = new fabric.Canvas(canvasRef.current, {
         width: canvasSize.width,
         height: canvasSize.height,
-        backgroundColor: 'white'
+        backgroundColor: 'white',
+        enableRetinaScaling: true, // Bật hỗ trợ màn hình Retina
       })
+
+      // Set scale cho canvas element
+      const canvas = fabricRef.current.getElement()
+      canvas.style.width = `${canvasSize.width}px`
+      canvas.style.height = `${canvasSize.height}px`
+      
+      // Set actual size cho canvas với DPI scaling
+      canvas.width = Math.floor(canvasSize.width * dpi)
+      canvas.height = Math.floor(canvasSize.height * dpi)
+
+      // Scale context
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.scale(dpi, dpi)
+      }
 
       // Lắng nghe sự kiện khi object được chọn trên canvas
       fabricRef.current.on('selection:created', handleSelectionChange)
@@ -125,7 +162,7 @@ export default function ImageEditor() {
         }
       }
     }
-  }, [])
+  }, [canvasSize.width, canvasSize.height])
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
@@ -328,193 +365,224 @@ export default function ImageEditor() {
     }
   }
 
+  // Xử lý pan (kéo canvas)
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button === 1 || e.button === 2) { // middle mouse or right mouse
+      setIsDragging(true)
+      setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y })
+    }
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) {
+      setPan({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      })
+    }
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  // Prevent context menu on right click
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault()
+  }
+
   return (
-    <div className="grid grid-cols-12 gap-8 h-full">
-      <div className="col-span-3 overflow-y-auto h-[calc(100vh-2rem)]">
+    <div className="grid grid-cols-12 gap-4 overflow-hidden">
+      {/* Sidebar */}
+      <div className="col-span-3 overflow-y-auto h-full pr-4">
         <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              {/* Image Upload */}
-              <div>
-                <Label>Add Image</Label>
-                <div
-                  className="mt-2 border-2 border-dashed border-primary/20 rounded-lg p-4 text-center"
-                  onDrop={handleDrop}
-                  onDragOver={(e) => e.preventDefault()}
+          <CardContent className="p-6 space-y-4">
+            {/* Image Upload */}
+            <div>
+              <Label>Add Image</Label>
+              <div
+                className="mt-2 border-2 border-dashed border-primary/20 rounded-lg p-4 text-center"
+                onDrop={handleDrop}
+                onDragOver={(e) => e.preventDefault()}
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={(e) => handleFiles(Array.from(e.target.files || []))}
+                />
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  variant="outline"
+                  className="w-full"
                 >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    ref={fileInputRef}
-                    onChange={(e) => handleFiles(Array.from(e.target.files || []))}
-                  />
-                  <Button
-                    onClick={() => fileInputRef.current?.click()}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Images
-                  </Button>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    or drag and drop
-                  </p>
-                </div>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload Images
+                </Button>
+                <p className="text-sm text-muted-foreground mt-2">
+                  or drag and drop
+                </p>
               </div>
+            </div>
 
-              {/* Text Tools */}
-              <div>
-                <Label>Text Tools</Label>
-                <div className="mt-2 space-y-4">
-                  <Button
-                    onClick={addText}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <Type className="h-4 w-4 mr-2" />
-                    Add Text
-                  </Button>
+            {/* Text Tools */}
+            <div>
+              <Label>Text Tools</Label>
+              <div className="mt-2 space-y-4">
+                <Button
+                  onClick={addText}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Type className="h-4 w-4 mr-2" />
+                  Add Text
+                </Button>
 
-                  {selectedObject?.type === 'i-text' && (
-                    <>
-                      <Select
-                        value={textOptions.fontFamily}
-                        onValueChange={(value) => updateTextOptions({ fontFamily: value })}
+                {selectedObject?.type === 'i-text' && (
+                  <>
+                    <Select
+                      value={textOptions.fontFamily}
+                      onValueChange={(value) => updateTextOptions({ fontFamily: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select font" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FONTS.map(font => (
+                          <SelectItem key={font} value={font}>
+                            {font}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        value={textOptions.fontSize}
+                        onChange={(e) => updateTextOptions({ fontSize: Number(e.target.value) })}
+                        min={8}
+                        max={72}
+                      />
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => toggleTextStyle('bold')}
+                        className={textOptions.fontWeight === 'bold' ? 'bg-accent' : ''}
                       >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select font" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {FONTS.map(font => (
-                            <SelectItem key={font} value={font}>
-                              {font}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        <Bold className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => toggleTextStyle('italic')}
+                        className={textOptions.fontStyle === 'italic' ? 'bg-accent' : ''}
+                      >
+                        <Italic className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => toggleTextStyle('underline')}
+                        className={textOptions.textDecoration === 'underline' ? 'bg-accent' : ''}
+                      >
+                        <Underline className="h-4 w-4" />
+                      </Button>
+                    </div>
 
-                      <div className="flex gap-2">
-                        <Input
-                          type="number"
-                          value={textOptions.fontSize}
-                          onChange={(e) => updateTextOptions({ fontSize: Number(e.target.value) })}
-                          min={8}
-                          max={72}
-                        />
+                    <Input
+                      type="color"
+                      value={textOptions.fill}
+                      onChange={(e) => updateTextOptions({ fill: e.target.value })}
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Add Layers Panel */}
+            <div>
+              <Label>Layers</Label>
+              <div className="mt-2 border rounded-lg">
+                {layers.length === 0 ? (
+                  <div className="p-4 text-center text-muted-foreground">
+                    No layers yet
+                  </div>
+                ) : (
+                  <div className="divide-y">
+                    {[...layers].reverse().map((layer, index) => (
+                      <div
+                        key={layer.id}
+                        className={cn(
+                          "p-3 flex items-center gap-3 cursor-pointer select-none",
+                          (selectedLayer?.id === layer.id || selectedObject === layer.object) && "bg-accent"
+                        )}
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData('text/plain', index.toString())
+                        }}
+                        onDragOver={(e) => {
+                          e.preventDefault()
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault()
+                          const startIndex = parseInt(e.dataTransfer.getData('text/plain'))
+                          reorderLayers(startIndex, index)
+                        }}
+                        onClick={() => handleLayerClick(layer)}
+                      >
+                        {layer.type === 'image' ? (
+                          <FileImage className="h-4 w-4" />
+                        ) : (
+                          <Type className="h-4 w-4" />
+                        )}
+                        <span className="flex-1 truncate">{layer.name}</span>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="icon"
-                          onClick={() => toggleTextStyle('bold')}
-                          className={textOptions.fontWeight === 'bold' ? 'bg-accent' : ''}
+                          className="h-8 w-8"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            fabricRef.current?.remove(layer.object)
+                            setLayers(prev => prev.filter(l => l.id !== layer.id))
+                            if (selectedLayer?.id === layer.id) {
+                              setSelectedLayer(null)
+                              setSelectedObject(null)
+                            }
+                          }}
                         >
-                          <Bold className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => toggleTextStyle('italic')}
-                          className={textOptions.fontStyle === 'italic' ? 'bg-accent' : ''}
-                        >
-                          <Italic className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => toggleTextStyle('underline')}
-                          className={textOptions.textDecoration === 'underline' ? 'bg-accent' : ''}
-                        >
-                          <Underline className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-
-                      <Input
-                        type="color"
-                        value={textOptions.fill}
-                        onChange={(e) => updateTextOptions({ fill: e.target.value })}
-                      />
-                    </>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
+            </div>
 
-              {/* Add Layers Panel */}
-              <div>
-                <Label>Layers</Label>
-                <div className="mt-2 border rounded-lg">
-                  {layers.length === 0 ? (
-                    <div className="p-4 text-center text-muted-foreground">
-                      No layers yet
-                    </div>
-                  ) : (
-                    <div className="divide-y">
-                      {[...layers].reverse().map((layer, index) => (
-                        <div
-                          key={layer.id}
-                          className={cn(
-                            "p-3 flex items-center gap-3 cursor-pointer select-none",
-                            (selectedLayer?.id === layer.id || selectedObject === layer.object) && "bg-accent"
-                          )}
-                          draggable
-                          onDragStart={(e) => {
-                            e.dataTransfer.setData('text/plain', index.toString())
-                          }}
-                          onDragOver={(e) => {
-                            e.preventDefault()
-                          }}
-                          onDrop={(e) => {
-                            e.preventDefault()
-                            const startIndex = parseInt(e.dataTransfer.getData('text/plain'))
-                            reorderLayers(startIndex, index)
-                          }}
-                          onClick={() => handleLayerClick(layer)}
-                        >
-                          {layer.type === 'image' ? (
-                            <FileImage className="h-4 w-4" />
-                          ) : (
-                            <Type className="h-4 w-4" />
-                          )}
-                          <span className="flex-1 truncate">{layer.name}</span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              fabricRef.current?.remove(layer.object)
-                              setLayers(prev => prev.filter(l => l.id !== layer.id))
-                              if (selectedLayer?.id === layer.id) {
-                                setSelectedLayer(null)
-                                setSelectedObject(null)
-                              }
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Canvas Size Controls */}
-              <div>
-                <Label>Canvas Size</Label>
-                <div className="mt-2 space-y-4">
-                  <Select value={selectedPreset} onValueChange={(value) => handlePresetChange(value as CanvasPreset)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select preset size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(CANVAS_PRESETS).map(([key, preset]) => (
-                        <SelectItem key={key} value={key}>
-                          {preset.name} ({preset.width}x{preset.height})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+            {/* Canvas Settings */}
+            <div>
+              <Label>Canvas Settings</Label>
+              <div className="mt-2 space-y-4">
+                {/* Canvas Size Controls */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label>Canvas Size</Label>
+                    <Select value={selectedPreset} onValueChange={(value) => handlePresetChange(value as CanvasPreset)}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Select size" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(CANVAS_PRESETS).map(([key, preset]) => (
+                          <SelectItem key={key} value={key}>
+                            {preset.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -541,37 +609,97 @@ export default function ImageEditor() {
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Add Download button at the bottom */}
-              <div className="pt-4 border-t">
-                <Button 
-                  onClick={handleDownload} 
-                  className="w-full flex items-center justify-center gap-2"
-                  variant="default"
-                >
-                  <Download className="h-4 w-4" />
-                  Download Image
-                </Button>
+                {/* Zoom Control */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label>Zoom</Label>
+                    <span className="text-sm text-muted-foreground">
+                      {Math.round(zoom * 100)}%
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setZoom(z => Math.max(0.1, z - 0.1))}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Slider
+                      value={[zoom * 100]}
+                      onValueChange={(value) => {
+                        const maxZoom = calculateMaxZoom()
+                        setZoom(Math.min(maxZoom, value[0] / 100))
+                      }}
+                      min={10}
+                      max={Math.round(calculateMaxZoom() * 100)}
+                      step={1}
+                      className="flex-1"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      disabled= {zoom >= calculateMaxZoom()}
+                      onClick={() => {
+                        const maxZoom = calculateMaxZoom()
+                        setZoom(z => Math.min(maxZoom, z + 0.1))
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        if (containerRef.current) {
+                          const initialScale = calculateInitialScale(
+                            containerRef.current.clientWidth,
+                            containerRef.current.clientHeight
+                          )
+                          setZoom(initialScale)
+                          setPan({ x: 0, y: 0 })
+                        }
+                      }}
+                    >
+                      <Move className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
+            </div>
+
+            {/* Add Download button at the bottom */}
+            <div className="pt-4 border-t">
+              <Button 
+                onClick={handleDownload} 
+                className="w-full flex items-center justify-center gap-2"
+                variant="default"
+              >
+                <Download className="h-4 w-4" />
+                Download Image
+              </Button>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="col-span-9">
+      {/* Main canvas area */}
+      <div className="col-span-9 h-full">
         <div 
           ref={containerRef}
-          className="w-full h-[calc(100vh-2rem)] bg-accent/10 rounded-lg flex items-start justify-center"
+          className="w-full h-full bg-accent/10 relative flex justify-center" 
+          style={{ alignItems: 'flex-start'}}
         >
           <div 
             style={{
-              transform: `scale(${scale})`,
-              transformOrigin: 'top',
-              width: canvasSize.width,
-              height: canvasSize.height,
+              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+              transformOrigin: 'top center',
+              width: canvasSize.width * zoom,
+              height: canvasSize.height * zoom,
+              cursor: isDragging ? 'grabbing' : 'grab',
             }}
-            className="relative bg-white shadow-lg"
+            className="relative bg-white shadow-lg transition-transform duration-100 "
           >
             <canvas ref={canvasRef} />
           </div>
@@ -580,9 +708,6 @@ export default function ImageEditor() {
     </div>
   )
 }
-
-
-
 
 
 
