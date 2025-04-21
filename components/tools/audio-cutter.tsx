@@ -1,15 +1,30 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Upload, Download, Play, Pause, Scissors, Music } from "lucide-react"
+import { Play, Pause } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Upload } from "lucide-react"
 import WaveSurfer from "wavesurfer.js"
 import RegionsPlugin from "wavesurfer.js/dist/plugins/regions"
 import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"
 import { toast } from "sonner"
 
 interface EQBand {
@@ -169,19 +184,123 @@ const EQ_PRESETS = {
 }
 
 const AUDIO_EFFECTS = {
-  none: { gain: 1, speed: 1, eq: EQ_PRESETS.normal },
-  nightcore: { gain: 1, speed: 1.3, eq: EQ_PRESETS.pop },
-  vaporwave: { gain: 1, speed: 0.7, eq: EQ_PRESETS.bass },
-  club: { gain: 1, speed: 1, eq: EQ_PRESETS.club },
-  dance: { gain: 1, speed: 1, eq: EQ_PRESETS.dance },
-  rock: { gain: 1, speed: 1, eq: EQ_PRESETS.rock },
-  pop: { gain: 1, speed: 1, eq: EQ_PRESETS.pop },
-  classical: { gain: 1, speed: 1, eq: EQ_PRESETS.classical },
-  bass: { gain: 1, speed: 1, eq: EQ_PRESETS.bass },
-  treble: { gain: 1, speed: 1, eq: EQ_PRESETS.treble }
+  none: { 
+    gain: 1, 
+    speed: 1, 
+    eq: EQ_PRESETS.normal,
+    frequencies: {
+      bass: 0,    // dB
+      mid: 0,     // dB
+      treble: 0   // dB
+    }
+  },
+  nightcore: { 
+    gain: 1, 
+    speed: 1.3, 
+    eq: EQ_PRESETS.pop,
+    frequencies: {
+      bass: 2,    // Tăng bass nhẹ
+      mid: 3,     // Tăng mid để giọng rõ
+      treble: 4   // Tăng treble để thêm độ sáng
+    }
+  },
+  vaporwave: { 
+    gain: 1, 
+    speed: 0.7, 
+    eq: EQ_PRESETS.bass,
+    frequencies: {
+      bass: 6,    // Tăng bass mạnh
+      mid: -2,    // Giảm mid
+      treble: -3  // Giảm treble để âm trầm hơn
+    }
+  },
+  club: { 
+    gain: 1, 
+    speed: 1, 
+    eq: EQ_PRESETS.club,
+    frequencies: {
+      bass: 4,    // Tăng bass
+      mid: 3,     // Tăng mid
+      treble: 1   // Tăng treble nhẹ
+    }
+  },
+  dance: { 
+    gain: 1, 
+    speed: 1, 
+    eq: EQ_PRESETS.dance,
+    frequencies: {
+      bass: 5,    // Tăng bass mạnh
+      mid: -2,    // Giảm mid
+      treble: 2   // Tăng treble vừa phải
+    }
+  },
+  rock: { 
+    gain: 1, 
+    speed: 1, 
+    eq: EQ_PRESETS.rock,
+    frequencies: {
+      bass: 3,    // Tăng bass vừa phải
+      mid: 2,     // Tăng mid nhẹ
+      treble: 4   // Tăng treble mạnh
+    }
+  },
+  pop: { 
+    gain: 1, 
+    speed: 1, 
+    eq: EQ_PRESETS.pop,
+    frequencies: {
+      bass: 1,    // Tăng bass nhẹ
+      mid: 4,     // Tăng mid mạnh
+      treble: 2   // Tăng treble vừa phải
+    }
+  },
+  classical: { 
+    gain: 1, 
+    speed: 1, 
+    eq: EQ_PRESETS.classical,
+    frequencies: {
+      bass: 0,    // Giữ nguyên bass
+      mid: 2,     // Tăng mid nhẹ
+      treble: -2  // Giảm treble nhẹ
+    }
+  },
+  bass: { 
+    gain: 1, 
+    speed: 1, 
+    eq: EQ_PRESETS.bass,
+    frequencies: {
+      bass: 8,    // Tăng bass rất mạnh
+      mid: -1,    // Giảm mid nhẹ
+      treble: -4  // Giảm treble mạnh
+    }
+  },
+  treble: { 
+    gain: 1, 
+    speed: 1, 
+    eq: EQ_PRESETS.treble,
+    frequencies: {
+      bass: -2,   // Giảm bass nhẹ
+      mid: 0,     // Giữ nguyên mid
+      treble: 8   // Tăng treble rất mạnh
+    }
+  }
 }
 
-let currentFilters: BiquadFilterNode[] = []
+// Thêm biến để lưu trữ AudioContext và SourceNode ở level cao hơn
+let audioCtx: AudioContext | null = null;
+let sourceNode: MediaElementAudioSourceNode | null = null;
+let currentFilters: BiquadFilterNode[] = [];
+
+// Thêm interface cho custom settings
+interface CustomSettings {
+  gain: number;
+  speed: number;
+  frequencies: {
+    bass: number;
+    mid: number;
+    treble: number;
+  };
+}
 
 export default function AudioCutter() {
   const [audioFile, setAudioFile] = useState<File | null>(null)
@@ -194,6 +313,17 @@ export default function AudioCutter() {
   const regionsRef = useRef<any>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const activeRegion = useRef<any>(null)
+
+  // Thêm state cho custom settings
+  const [customSettings, setCustomSettings] = useState<CustomSettings>({
+    gain: 1,
+    speed: 1,
+    frequencies: {
+      bass: 0,
+      mid: 0,
+      treble: 0
+    }
+  });
 
   useEffect(() => {
     if (waveformRef.current) {
@@ -331,6 +461,7 @@ export default function AudioCutter() {
   const togglePlayPause = () => {
     if (!wavesurferRef.current) return
     wavesurferRef.current.playPause()
+    setIsPlaying(!isPlaying)
   }
 
   const handleEffectChange = (value: string) => {
@@ -339,13 +470,79 @@ export default function AudioCutter() {
     setCurrentEffect(value)
     const effect = AUDIO_EFFECTS[value as keyof typeof AUDIO_EFFECTS]
     
-    // Apply effect
+    // Cập nhật custom settings theo preset được chọn
+    setCustomSettings({
+      gain: effect.gain,
+      speed: effect.speed,
+      frequencies: {
+        bass: effect.frequencies.bass,
+        mid: effect.frequencies.mid,
+        treble: effect.frequencies.treble
+      }
+    })
+
+    // Áp dụng tốc độ phát
     wavesurferRef.current.setPlaybackRate(effect.speed)
-    // You can add more audio effects here using Web Audio API
+
+    try {
+      // Tạo AudioContext nếu chưa có
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+
+      // Xóa các filter cũ
+      currentFilters.forEach(filter => {
+        filter.disconnect();
+      });
+      currentFilters = [];
+
+      // Tạo và áp dụng các filter mới
+      const bassFilter = audioCtx.createBiquadFilter();
+      bassFilter.type = 'lowshelf';
+      bassFilter.frequency.value = 200;
+      bassFilter.gain.value = effect.frequencies.bass;
+
+      const midFilter = audioCtx.createBiquadFilter();
+      midFilter.type = 'peaking';
+      midFilter.frequency.value = 1500;
+      midFilter.Q.value = 1;
+      midFilter.gain.value = effect.frequencies.mid;
+
+      const trebleFilter = audioCtx.createBiquadFilter();
+      trebleFilter.type = 'highshelf';
+      trebleFilter.frequency.value = 3000;
+      trebleFilter.gain.value = effect.frequencies.treble;
+
+      const audioElement = wavesurferRef.current.getMediaElement();
+      if (audioElement) {
+        // Tạo source node mới nếu chưa có
+        if (!sourceNode) {
+          sourceNode = audioCtx.createMediaElementSource(audioElement);
+        } else {
+          // Ngắt kết nối source node hiện tại
+          sourceNode.disconnect();
+        }
+
+        // Kết nối các node mới
+        sourceNode.connect(bassFilter);
+        bassFilter.connect(midFilter);
+        midFilter.connect(trebleFilter);
+        trebleFilter.connect(audioCtx.destination);
+
+        // Lưu các filter để có thể xóa sau này
+        currentFilters = [bassFilter, midFilter, trebleFilter];
+      }
+    } catch (err) {
+      console.error('Error applying audio effects:', err);
+      toast.error("Failed to apply audio effect");
+    }
   }
 
   const handleCutAudio = async () => {
-    if (!audioFile || !wavesurferRef.current || !activeRegion.current) return
+    if (!wavesurferRef.current || !activeRegion.current) {
+      toast.error("Please select a region to cut")
+      return
+    }
 
     try {
       const region = activeRegion.current
@@ -369,49 +566,89 @@ export default function AudioCutter() {
         newLength,
         originalBuffer.sampleRate
       )
-      
-      // Copy the selected portion
+
+      // Copy the selected portion of audio
       for (let channel = 0; channel < originalBuffer.numberOfChannels; channel++) {
-        const channelData = originalBuffer.getChannelData(channel)
-        const newChannelData = newBuffer.getChannelData(channel)
+        const originalData = originalBuffer.getChannelData(channel)
+        const newData = newBuffer.getChannelData(channel)
+        
         for (let i = 0; i < newLength; i++) {
-          newChannelData[i] = channelData[startSample + i]
+          newData[i] = originalData[startSample + i]
         }
-      }
-      
-      // Apply selected effect
-      const effect = AUDIO_EFFECTS[currentEffect as keyof typeof AUDIO_EFFECTS]
-      if (effect.speed !== 1) {
-        // Implement pitch shifting here if needed
-        // This is a simplified version that only changes speed
-        const pitchBuffer = audioContext.createBuffer(
-          newBuffer.numberOfChannels,
-          Math.floor(newBuffer.length / effect.speed),
-          newBuffer.sampleRate
-        )
-        
-        for (let channel = 0; channel < newBuffer.numberOfChannels; channel++) {
-          const channelData = newBuffer.getChannelData(channel)
-          const pitchChannelData = pitchBuffer.getChannelData(channel)
-          for (let i = 0; i < pitchBuffer.length; i++) {
-            pitchChannelData[i] = channelData[Math.floor(i * effect.speed)]
-          }
-        }
-        
-        // Convert to wav and download
-        const blob = await audioBufferToWav(pitchBuffer)
-        downloadBlob(blob, `${currentEffect}_${audioFile.name}`)
-      } else {
-        // Convert to wav and download without effects
-        const blob = await audioBufferToWav(newBuffer)
-        downloadBlob(blob, `cut_${audioFile.name}`)
       }
 
-      toast.success("Audio successfully exported!")
+      // Apply effects to the new buffer
+      const offlineContext = new OfflineAudioContext(
+        newBuffer.numberOfChannels,
+        newBuffer.length,
+        newBuffer.sampleRate
+      )
+
+      // Create source from new buffer
+      const source = offlineContext.createBufferSource()
+      source.buffer = newBuffer
+
+      // Apply current effects
+      const bassFilter = offlineContext.createBiquadFilter()
+      bassFilter.type = 'lowshelf'
+      bassFilter.frequency.value = 200
+      bassFilter.gain.value = customSettings.frequencies.bass
+
+      const midFilter = offlineContext.createBiquadFilter()
+      midFilter.type = 'peaking'
+      midFilter.frequency.value = 1500
+      midFilter.Q.value = 1
+      midFilter.gain.value = customSettings.frequencies.mid
+
+      const trebleFilter = offlineContext.createBiquadFilter()
+      trebleFilter.type = 'highshelf'
+      trebleFilter.frequency.value = 3000
+      trebleFilter.gain.value = customSettings.frequencies.treble
+
+      // Connect nodes
+      source.connect(bassFilter)
+      bassFilter.connect(midFilter)
+      midFilter.connect(trebleFilter)
+      trebleFilter.connect(offlineContext.destination)
+
+      // Start the source
+      source.start()
+
+      // Render the audio
+      const renderedBuffer = await offlineContext.startRendering()
+
+      // Apply playback speed
+      const speedAdjustedLength = Math.floor(renderedBuffer.length / customSettings.speed)
+      const speedAdjustedBuffer = audioContext.createBuffer(
+        renderedBuffer.numberOfChannels,
+        speedAdjustedLength,
+        renderedBuffer.sampleRate
+      )
+
+      for (let channel = 0; channel < renderedBuffer.numberOfChannels; channel++) {
+        const channelData = renderedBuffer.getChannelData(channel)
+        const newChannelData = speedAdjustedBuffer.getChannelData(channel)
+        
+        for (let i = 0; i < speedAdjustedLength; i++) {
+          newChannelData[i] = channelData[Math.floor(i * customSettings.speed)]
+        }
+      }
+
+      // Convert to WAV and download
+      const wav = audioBufferToWav(speedAdjustedBuffer)
+      const url = URL.createObjectURL(wav)
+      
+      // Create download link
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `cut_audio_${currentEffect !== 'none' ? currentEffect : 'custom'}.wav`
+      link.click()
+      
+      URL.revokeObjectURL(url)
+      toast.success("Audio cut and downloaded successfully!")
     } catch (err) {
-      setError("Failed to process audio file")
-      console.error(err)
-      toast.error("Failed to process audio file")
+      console.error('Error cutting audio:', err)
+      toast.error("Failed to cut audio")
     }
   }
 
@@ -424,93 +661,336 @@ export default function AudioCutter() {
     URL.revokeObjectURL(url)
   }
 
+  // Thêm cleanup function trong useEffect để dọn dẹp khi component unmount
+  useEffect(() => {
+    return () => {
+      // Cleanup audio nodes
+      if (sourceNode) {
+        sourceNode.disconnect();
+        sourceNode = null;
+      }
+      if (currentFilters.length) {
+        currentFilters.forEach(filter => filter.disconnect());
+        currentFilters = [];
+      }
+      if (audioCtx) {
+        audioCtx.close();
+        audioCtx = null;
+      }
+    };
+  }, []);
+
+  // Thêm UI cho custom settings
+  const CustomSettingsPanel = () => {
+    return (
+      <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+        <div>
+          <label className="text-sm font-medium">Speed</label>
+          <input
+            type="range"
+            min="0.5"
+            max="2"
+            step="0.1"
+            value={customSettings.speed}
+            className="w-full"
+            onChange={(e) => {
+              const newSpeed = parseFloat(e.target.value);
+              setCustomSettings(prev => ({
+                ...prev,
+                speed: newSpeed
+              }));
+              if (wavesurferRef.current) {
+                wavesurferRef.current.setPlaybackRate(newSpeed);
+              }
+            }}
+          />
+          <div className="text-xs text-right">{customSettings.speed}x</div>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">Gain</label>
+          <input
+            type="range"
+            min="0"
+            max="2"
+            step="0.1"
+            value={customSettings.gain}
+            className="w-full"
+            onChange={(e) => {
+              setCustomSettings(prev => ({
+                ...prev,
+                gain: parseFloat(e.target.value)
+              }));
+            }}
+          />
+          <div className="text-xs text-right">{customSettings.gain}x</div>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">Bass</label>
+          <input
+            type="range"
+            min="-12"
+            max="12"
+            step="1"
+            value={customSettings.frequencies.bass}
+            className="w-full"
+            onChange={(e) => {
+              setCustomSettings(prev => ({
+                ...prev,
+                frequencies: {
+                  ...prev.frequencies,
+                  bass: parseFloat(e.target.value)
+                }
+              }));
+            }}
+          />
+          <div className="text-xs text-right">{customSettings.frequencies.bass} dB</div>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">Mid</label>
+          <input
+            type="range"
+            min="-12"
+            max="12"
+            step="1"
+            value={customSettings.frequencies.mid}
+            className="w-full"
+            onChange={(e) => {
+              setCustomSettings(prev => ({
+                ...prev,
+                frequencies: {
+                  ...prev.frequencies,
+                  mid: parseFloat(e.target.value)
+                }
+              }));
+            }}
+          />
+          <div className="text-xs text-right">{customSettings.frequencies.mid} dB</div>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">Treble</label>
+          <input
+            type="range"
+            min="-12"
+            max="12"
+            step="1"
+            value={customSettings.frequencies.treble}
+            className="w-full"
+            onChange={(e) => {
+              setCustomSettings(prev => ({
+                ...prev,
+                frequencies: {
+                  ...prev.frequencies,
+                  treble: parseFloat(e.target.value)
+                }
+              }));
+            }}
+          />
+          <div className="text-xs text-right">{customSettings.frequencies.treble} dB</div>
+        </div>
+
+        <button
+          className="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+          onClick={() => applyCustomSettings()}
+        >
+          Apply Settings
+        </button>
+      </div>
+    );
+  };
+
+  // Thêm hàm để áp dụng custom settings
+  const applyCustomSettings = () => {
+    if (!wavesurferRef.current) return;
+
+    try {
+      // Áp dụng tốc độ
+      wavesurferRef.current.setPlaybackRate(customSettings.speed);
+
+      // Tạo AudioContext nếu chưa có
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+
+      // Xóa các filter cũ
+      currentFilters.forEach(filter => {
+        filter.disconnect();
+      });
+      currentFilters = [];
+
+      // Tạo và áp dụng các filter mới
+      const bassFilter = audioCtx.createBiquadFilter();
+      bassFilter.type = 'lowshelf';
+      bassFilter.frequency.value = 200;
+      bassFilter.gain.value = customSettings.frequencies.bass;
+
+      const midFilter = audioCtx.createBiquadFilter();
+      midFilter.type = 'peaking';
+      midFilter.frequency.value = 1500;
+      midFilter.Q.value = 1;
+      midFilter.gain.value = customSettings.frequencies.mid;
+
+      const trebleFilter = audioCtx.createBiquadFilter();
+      trebleFilter.type = 'highshelf';
+      trebleFilter.frequency.value = 3000;
+      trebleFilter.gain.value = customSettings.frequencies.treble;
+
+      const audioElement = wavesurferRef.current.getMediaElement();
+      if (audioElement) {
+        // Tạo source node mới nếu chưa có
+        if (!sourceNode) {
+          sourceNode = audioCtx.createMediaElementSource(audioElement);
+        } else {
+          // Ngắt kết nối source node hiện tại
+          sourceNode.disconnect();
+        }
+
+        // Kết nối các node mới
+        sourceNode.connect(bassFilter);
+        bassFilter.connect(midFilter);
+        midFilter.connect(trebleFilter);
+        trebleFilter.connect(audioCtx.destination);
+
+        // Lưu các filter để có thể xóa sau này
+        currentFilters = [bassFilter, midFilter, trebleFilter];
+      }
+
+      toast.success("Custom settings applied successfully!");
+    } catch (err) {
+      console.error('Error applying custom settings:', err);
+      toast.error("Failed to apply custom settings");
+    }
+  };
+
   return (
-    <div className="grid gap-8">
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            {/* Upload Button */}
-            <div>
-              <Label>Upload Audio</Label>
-              <div className="mt-2">
-                <input
-                  type="file"
-                  accept="audio/*"
-                  className="hidden"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                />
-                <Button
-                  onClick={() => fileInputRef.current?.click()}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Audio File
-                </Button>
-              </div>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {/* Waveform Container - Always render this */}
-            <div 
-              ref={waveformRef} 
-              className="w-full h-32 border rounded-md bg-white" 
-              style={{ minHeight: '128px' }}
+    <div className="container mx-auto p-6 max-w-5xl">
+      <div className="space-y-6">
+        {/* Upload Button */}
+        <div>
+          <Label>Upload Audio</Label>
+          <div className="mt-2">
+            <input
+              type="file"
+              accept="audio/*"
+              className="hidden"
+              ref={fileInputRef}
+              onChange={handleFileChange}
             />
-
-            {/* Audio Controls - Show only when audio is loaded */}
-            {audioFile && (
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <Button
-                    onClick={togglePlayPause}
-                    variant="outline"
-                    size="sm"
-                    className="w-24"
-                  >
-                    {isPlaying ? (
-                      <>
-                        <Pause className="h-4 w-4 mr-2" />
-                        Pause
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-4 w-4 mr-2" />
-                        Play
-                      </>
-                    )}
-                  </Button>
-
-                  <Select value={currentEffect} onValueChange={handleEffectChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose effect" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.keys(AUDIO_EFFECTS).map((effect) => (
-                        <SelectItem key={effect} value={effect}>
-                          {effect.charAt(0).toUpperCase() + effect.slice(1)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Button onClick={handleCutAudio} variant="outline" size="sm">
-                    <Scissors className="h-4 w-4 mr-2" />
-                    Cut
-                  </Button>
-                </div>
-              </div>
-            )}
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              variant="outline"
+              className="w-full"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Upload Audio File
+            </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Waveform Container - Always render this */}
+        <div 
+          ref={waveformRef} 
+          className="w-full h-32 border rounded-md bg-white" 
+          style={{ minHeight: '128px' }}
+        />
+
+        {/* Playback Controls */}
+        {audioFile && (
+          <div className="flex justify-center gap-4">
+            <Button
+              onClick={togglePlayPause}
+              variant="outline"
+              size="icon"
+              className="w-12 h-12"
+            >
+              {isPlaying ? (
+                <Pause className="h-6 w-6" />
+              ) : (
+                <Play className="h-6 w-6" />
+              )}
+            </Button>
+          </div>
+        )}
+
+        {/* Audio Controls - Show only when audio is loaded */}
+        {audioFile && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Preset Effects */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Preset Effects</CardTitle>
+                <CardDescription>Choose from predefined audio effects</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Select value={currentEffect} onValueChange={handleEffectChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select an effect" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="club">Club</SelectItem>
+                      <SelectItem value="dance">Dance</SelectItem>
+                      <SelectItem value="rock">Rock</SelectItem>
+                      <SelectItem value="pop">Pop</SelectItem>
+                      <SelectItem value="classical">Classical</SelectItem>
+                      <SelectItem value="bass">Bass Boost</SelectItem>
+                      <SelectItem value="treble">Treble Boost</SelectItem>
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+
+            {/* Custom Settings Panel */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Custom Settings</CardTitle>
+                <CardDescription>Fine-tune your audio parameters</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CustomSettingsPanel />
+              </CardContent>
+            </Card>
+
+            {/* Cut Audio Button */}
+            <div className="md:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Cut Audio</CardTitle>
+                  <CardDescription>
+                    Cut the selected region with current effects applied
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Selected region: {activeRegion.current ? 
+                        `${activeRegion.current.start.toFixed(2)}s to ${activeRegion.current.end.toFixed(2)}s` : 
+                        'No region selected'}
+                    </p>
+                    <Button 
+                      onClick={handleCutAudio}
+                      className="w-full"
+                      disabled={!activeRegion.current}
+                    >
+                      Cut and Download
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
