@@ -866,7 +866,7 @@ export default function AudioCutter() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-5xl">
+    <div className="container mx-auto p-2 p-md-6 max-w-5xl">
       <div className="space-y-6">
         {/* Upload Button */}
         <div>
@@ -900,7 +900,7 @@ export default function AudioCutter() {
         {/* Waveform Container - Always render this */}
         <div 
           ref={waveformRef} 
-          className="w-full h-32 border rounded-md bg-white" 
+          className="w-full h-32 border rounded-md bg-transparent" 
           style={{ minHeight: '128px' }}
         />
 
@@ -911,7 +911,7 @@ export default function AudioCutter() {
               onClick={togglePlayPause}
               variant="outline"
               size="icon"
-              className="w-12 h-12"
+              className="w-12 h-12 mt-2"
             >
               {isPlaying ? (
                 <Pause className="h-6 w-6" />

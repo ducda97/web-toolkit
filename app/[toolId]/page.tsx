@@ -54,7 +54,7 @@ export default async function ToolPage({ params }: { params: { toolId: string } 
   }
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto px-2 px-md-6">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 rounded-md bg-primary/10 text-primary">
