@@ -296,9 +296,9 @@ export default function ColorConverter() {
   }, [convertColor])
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <Card>
-        <CardContent className="pt-6">
+    <div className="grid grid-cols-12 gap-8">
+      <Card className="col-span-12 md:col-span-4">
+        <CardContent className="p-4 p-md-6">
           <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="hex-input">HEX Color</Label>
@@ -338,8 +338,8 @@ export default function ColorConverter() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="col-span-12 md:col-span-8">
+        <CardContent className="p-4 p-md-6">
           <div className="space-y-6">
             <div>
               <Label>Color Preview</Label>

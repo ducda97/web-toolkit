@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Sidebar } from "@/components/sidebar"
 import { SidebarProvider } from "@/components/sidebar-provider"
 import { MainContent } from "@/components/main-content"
+import { ReactNode } from "react"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -17,14 +18,10 @@ export const metadata: Metadata = {
     generator: 'v0.dev'
 }
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <ThemeProvider>
           <SidebarProvider>
             <div className="flex min-h-screen">
@@ -42,5 +39,3 @@ export default function RootLayout({
   )
 }
 
-
-import './globals.css'

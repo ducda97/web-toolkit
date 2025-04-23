@@ -116,8 +116,8 @@ export default function ImageCropper() {
 
   return (
     <div className="grid grid-cols-12 gap-8">
-      <Card className="col-span-4">
-        <CardContent className="pt-6">
+      <Card className="col-span-12 md:col-span-4">
+        <CardContent className="p-4 p-md-6">
           <div className="space-y-4">
             <div>
               <Label htmlFor="file-upload">Upload Image</Label>
@@ -134,8 +134,8 @@ export default function ImageCropper() {
                   onClick={() => fileInputRef.current?.click()}
                   className="w-full h-32 flex flex-col items-center justify-center border-2 border-dashed border-primary/20 bg-primary/5 hover:bg-primary/10"
                 >
-                  <Upload className="h-8 w-8 mb-2" />
-                  <span>Click to upload an image</span>
+                  <Upload className="h-8 w-8 mb-2 text-muted-foreground" />
+                  <span className="text-muted-foreground">Click to upload an image</span>
                   <span className="text-xs text-muted-foreground mt-1">
                     Supports JPG, PNG, GIF, WEBP
                   </span>
@@ -188,7 +188,7 @@ export default function ImageCropper() {
         </CardContent>
       </Card>
 
-      <Card className="col-span-8">
+      <Card className="col-span-12 md:col-span-8">
         <CardContent className="pt-6">
           <div className="space-y-4">
             <Label>Preview</Label>

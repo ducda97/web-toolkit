@@ -20,7 +20,7 @@ export function Sidebar() {
     if (isMobileOpen) {
       toggleMobileOpen()
     }
-  }, [pathname, isMobileOpen, toggleMobileOpen])
+  }, [pathname])  // Remove isMobileOpen and toggleMobileOpen from dependencies
 
   return (
     <>
@@ -29,7 +29,7 @@ export function Sidebar() {
         <Button
           variant="outline"
           size="icon"
-          onClick={toggleMobileOpen}
+          onClick={() => toggleMobileOpen()}  // Add arrow function here
           className="rounded-full shadow-md bg-background"
         >
           {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -38,7 +38,10 @@ export function Sidebar() {
 
       {/* Mobile Overlay */}
       {isMobileOpen && (
-        <div className="lg:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-40" onClick={toggleMobileOpen} />
+        <div 
+          className="lg:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-40" 
+          onClick={() => toggleMobileOpen()}  // Add arrow function here
+        />
       )}
 
       {/* Sidebar */}
@@ -46,7 +49,7 @@ export function Sidebar() {
         className={cn(
           "fixed top-0 left-0 z-40 h-full border-r bg-card transition-all duration-300 ease-in-out",
           isCollapsed ? "w-[70px]" : "w-[250px]",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         <div className="flex h-full flex-col">
@@ -130,3 +133,4 @@ export function Sidebar() {
     </>
   )
 }
+

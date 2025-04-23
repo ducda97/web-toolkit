@@ -108,9 +108,9 @@ export default function ImageConverter() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <Card>
-        <CardContent className="pt-6">
+    <div className="grid grid-cols-12 gap-8">
+      <Card className="col-span-12 md:col-span-4">
+        <CardContent className="p-4 p-md-6">
           <div className="space-y-4">
             <div>
               <Label htmlFor="file-upload">Upload Image</Label>
@@ -188,8 +188,8 @@ export default function ImageConverter() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="col-span-12 md:col-span-8">
+        <CardContent className="p-4 p-md-6">
           <div className="space-y-4">
             <Label>Preview</Label>
             <div className="min-h-[300px] flex items-center justify-center border rounded-md bg-accent/30">

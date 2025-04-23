@@ -1,8 +1,8 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, ReactNode } from "react"
 
-type SidebarContextType = {
+interface SidebarContextType {
   isCollapsed: boolean
   toggleCollapsed: () => void
   isMobileOpen: boolean
@@ -11,12 +11,22 @@ type SidebarContextType = {
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined)
 
+export function useSidebar() {
+  const context = useContext(SidebarContext)
+  if (!context) {
+    throw new Error("useSidebar must be used within a SidebarProvider")
+  }
+  return context
+}
+
 export function SidebarProvider({ children }: { children: ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
   const toggleCollapsed = () => setIsCollapsed((prev) => !prev)
-  const toggleMobileOpen = () => setIsMobileOpen((prev) => !prev)
+  const toggleMobileOpen = () => {
+    setIsMobileOpen((prev) => !prev)
+  }
 
   // Close mobile sidebar when window is resized to desktop
   useEffect(() => {
@@ -31,16 +41,16 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <SidebarContext.Provider value={{ isCollapsed, toggleCollapsed, isMobileOpen, toggleMobileOpen }}>
+    <SidebarContext.Provider 
+      value={{ 
+        isCollapsed, 
+        toggleCollapsed, 
+        isMobileOpen, 
+        toggleMobileOpen 
+      }}
+    >
       {children}
     </SidebarContext.Provider>
   )
 }
 
-export function useSidebar() {
-  const context = useContext(SidebarContext)
-  if (context === undefined) {
-    throw new Error("useSidebar must be used within a SidebarProvider")
-  }
-  return context
-}
