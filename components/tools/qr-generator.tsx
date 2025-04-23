@@ -90,7 +90,7 @@ export default function QrGenerator() {
   return (
     <div className="grid gap-6 md:grid-cols-2">
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 p-md-6">
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="text">Text or URL</Label>
@@ -200,7 +200,7 @@ export default function QrGenerator() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 p-md-6">
           <div className="space-y-6">
             <Label>QR Code Preview</Label>
             <div className="flex items-center justify-center p-4 min-h-[300px] border rounded-md bg-accent/30">

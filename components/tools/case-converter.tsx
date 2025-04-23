@@ -69,7 +69,7 @@ export default function CaseConverter() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 p-md-6">
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="input-text">Input Text</Label>
@@ -120,7 +120,7 @@ export default function CaseConverter() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 p-md-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label htmlFor="output-text">Converted Text</Label>

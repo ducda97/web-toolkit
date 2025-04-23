@@ -104,7 +104,7 @@ function PresetCarousel({
         </Button>
       </div>
       <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-2 p-2">
           {Object.entries(PRESET_FILTERS).map(([preset, filters]) => (
             <div className="flex-[0_0_100px]" key={preset}>
               <PresetThumbnail
@@ -561,32 +561,52 @@ export default function ImageFilter() {
     setGrayscale(filters.grayscale)
   }
 
-  const getImageStyle = () => {
-    const filters = selectedPreset !== "none"
-      ? PRESET_FILTERS[selectedPreset as keyof typeof PRESET_FILTERS]
-      : {
-        brightness,
-        contrast,
-        saturate,
-        sepia,
-        'hue-rotate': `${hueRotate}deg`,
-        blur,
-        invert,
-        opacity,
-        grayscale
-      }
+  const handleFilterChange = (filterType: string, value: number) => {
+    switch (filterType) {
+      case 'brightness':
+        setBrightness(value);
+        break;
+      case 'contrast':
+        setContrast(value);
+        break;
+      case 'saturate':
+        setSaturate(value);
+        break;
+      case 'blur':
+        setBlur(value);
+        break;
+      case 'sepia':
+        setSepia(value);
+        break;
+      case 'hue-rotate':
+        setHueRotate(value);
+        break;
+      case 'invert':
+        setInvert(value);
+        break;
+      case 'opacity':
+        setOpacity(value);
+        break;
+      case 'grayscale':
+        setGrayscale(value);
+        break;
+    }
+    // Reset preset khi người dùng tự điều chỉnh filter
+    setSelectedPreset("none");
+  }
 
+  const getImageStyle = () => {
     return {
       filter: `
-        brightness(${filters.brightness}%)
-        contrast(${filters.contrast}%)
-        saturate(${filters.saturate}%)
-        sepia(${filters.sepia}%)
-        hue-rotate(${filters['hue-rotate']})
-        blur(${filters.blur}px)
-        invert(${filters.invert}%)
-        opacity(${filters.opacity}%)
-        grayscale(${filters.grayscale}%)
+        brightness(${brightness}%)
+        contrast(${contrast}%)
+        saturate(${saturate}%)
+        sepia(${sepia}%)
+        hue-rotate(${hueRotate}deg)
+        blur(${blur}px)
+        invert(${invert}%)
+        opacity(${opacity}%)
+        grayscale(${grayscale}%)
       `
     }
   }
@@ -635,10 +655,9 @@ export default function ImageFilter() {
   }
 
   return (
-    <div className="grid grid-cols-12 gap-8">
-      <div className="col-span-4">
-        <Card>
-          <CardContent className="pt-6">
+      <div className="grid grid-cols-12 gap-8">
+        <Card className="col-span-12 md:col-span-4">
+          <CardContent className="p-6">
             <div className="space-y-4">
               <div>
                 <Label htmlFor="file-upload">Upload Image</Label>
@@ -876,10 +895,8 @@ export default function ImageFilter() {
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      <div className="col-span-8">
-        <Card>
+        <Card className="col-span-12 md:col-span-8">
           <CardContent className="pt-6">
             <div className="space-y-4">
               <Label>Preview</Label>
@@ -916,7 +933,6 @@ export default function ImageFilter() {
           </CardContent>
         </Card>
       </div>
-    </div>
   )
 }
 

@@ -143,7 +143,7 @@ export default function CodeFormatter() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 p-md-6">
           <div className="space-y-4">
             <div>
               <Label>Language</Label>
@@ -186,7 +186,7 @@ export default function CodeFormatter() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 p-md-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label htmlFor="formatted-code">Formatted Code</Label>

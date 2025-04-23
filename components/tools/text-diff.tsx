@@ -80,7 +80,7 @@ export default function TextDiff() {
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-4 p-md-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label htmlFor="text-1">Text 1</Label>
@@ -97,7 +97,7 @@ export default function TextDiff() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-4 p-md-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label htmlFor="text-2">Text 2</Label>
@@ -130,7 +130,7 @@ export default function TextDiff() {
       </div>
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 p-md-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label htmlFor="diff-result">Difference Result</Label>

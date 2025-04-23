@@ -43,7 +43,7 @@ export default function UrlEncoder() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 p-md-6">
           <div className="space-y-4">
             <div>
               <Tabs value={mode} onValueChange={setMode}>
@@ -79,7 +79,7 @@ export default function UrlEncoder() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4 p-md-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label htmlFor="output-text">{mode === "encode" ? "Encoded URL" : "Decoded Text"}</Label>
