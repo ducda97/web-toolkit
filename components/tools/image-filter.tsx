@@ -672,7 +672,7 @@ export default function ImageFilter() {
                   />
                   <Button
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full h-32 flex flex-col items-center justify-center border-2 border-dashed border-primary/20 bg-primary/5 hover:bg-primary/10"
+                    className="w-full h-32 flex flex-col items-center text-muted-foreground justify-center border-2 border-dashed border-primary/20 bg-primary/5 hover:bg-primary/10"
                   >
                     <Upload className="h-8 w-8 mb-2" />
                     <span>Click to upload an image</span>

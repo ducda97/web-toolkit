@@ -25,7 +25,7 @@ export default function Home() {
     <div className="container mx-auto px-2 px-md-6">
       <section className="mb-12">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4">Web Toolkit</h1>
+          <h1 className="text-4xl font-bold mb-4">DucDA Toolkit</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             A collection of useful tools for developers, designers, and content creators. All processing happens in your
             browser - no data is sent to any server.

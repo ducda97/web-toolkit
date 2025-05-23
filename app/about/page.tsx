@@ -2,11 +2,11 @@ export default function AboutPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">About Web Toolkit</h1>
+        <h1 className="text-3xl font-bold mb-6">About DucDA Toolkit</h1>
 
         <div className="prose prose-blue dark:prose-invert max-w-none">
           <p className="lead">
-            Web Toolkit is a collection of free, browser-based tools designed to help developers, designers, and content
+            DucDA Toolkit is a collection of free, browser-based tools designed to help developers, designers, and content
             creators with everyday tasks.
           </p>
 
@@ -24,7 +24,7 @@ export default function AboutPage() {
 
           <h2>Open Source</h2>
           <p>
-            Web Toolkit is open source and built with modern web technologies. We welcome contributions from the
+            DucDA Toolkit is open source and built with modern web technologies. We welcome contributions from the
             community to improve existing tools or add new ones.
           </p>
 
@@ -45,7 +45,7 @@ export default function AboutPage() {
           </ul>
 
           <h2>Technology</h2>
-          <p>Web Toolkit is built with:</p>
+          <p>DucDA Toolkit is built with:</p>
           <ul>
             <li>Next.js - React framework</li>
             <li>Tailwind CSS - Utility-first CSS framework</li>

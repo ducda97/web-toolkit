@@ -192,10 +192,10 @@ export default function ImageConverter() {
         <CardContent className="p-4 p-md-6">
           <div className="space-y-4">
             <Label>Preview</Label>
-            <div className="min-h-[300px] flex items-center justify-center border rounded-md bg-accent/30">
+            <div className="min-h-[400px] flex items-center justify-center border rounded-md bg-accent/30">
               {preview ? (
                 <div className="relative w-full h-full flex flex-col items-center">
-                  <div className="overflow-auto max-h-[300px] flex items-center justify-center p-4">
+                  <div className="overflow-auto max-h-[500px] flex items-center justify-center p-4">
                     <img
                       src={convertedImage || preview}
                       alt="Preview"

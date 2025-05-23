@@ -13,9 +13,8 @@ import { ReactNode } from "react"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Web Toolkit - All-in-one Web Tools",
+  title: "DucDA Toolkit - All-in-one Web Tools",
   description: "A collection of useful web tools for developers and designers",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {

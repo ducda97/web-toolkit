@@ -10,10 +10,12 @@ import { Separator } from "@/components/ui/separator"
 import { toolCategories } from "@/lib/tools"
 import { cn } from "@/lib/utils"
 import { useSidebar } from "@/components/sidebar-provider"
+import { useTheme } from "next-themes"
 
 export function Sidebar() {
   const pathname = usePathname()
   const { isCollapsed, toggleCollapsed, isMobileOpen, toggleMobileOpen } = useSidebar()
+  const { theme } = useTheme()
 
   // Close mobile sidebar when route changes
   useEffect(() => {
@@ -54,8 +56,16 @@ export function Sidebar() {
       >
         <div className="flex h-full flex-col">
           <div className="flex h-14 items-center px-3 border-b">
-            <Link href="/" className={cn("flex items-center gap-2 font-semibold", isCollapsed && "justify-center")}>
-              {!isCollapsed && <span>Web Toolkit</span>}
+            <Link href="/" className={cn("flex items-center justify-center gap-2 font-semibold", isCollapsed && "justify-center")}>
+              {!isCollapsed && (
+                <img 
+                  src={theme === "dark" ? "/logo-light.png" : "/logo-dark.png"} 
+                  className="ml-[-30px]" 
+                  width={180} 
+                  height={40} 
+                  alt="Logo"
+                />
+              )}
               {isCollapsed && <span className="text-xl">WT</span>}
             </Link>
             <div className="ml-auto">
@@ -133,4 +143,6 @@ export function Sidebar() {
     </>
   )
 }
+
+
 

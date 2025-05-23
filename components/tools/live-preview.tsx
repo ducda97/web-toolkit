@@ -148,7 +148,30 @@ ${js}`
           </Button>
 
           {!autoRefresh && (
-            <Button size="sm" onClick={updatePreview}>
+            <Button size="sm" onClick={() => {
+              const bodyContent = html
+                .replace(/<(!DOCTYPE|html|head|body)[^>]*>/gi, '')
+                .replace(/<\/(html|head|body)>/gi, '')
+                .trim();
+
+              const combinedCode = `
+                <!DOCTYPE html>
+                <html>
+                  <head>
+                    <meta charset="utf-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1">
+                    <style>${css}</style>
+                  </head>
+                  <body>
+                    ${bodyContent}
+                    <script>${js}</script>
+                  </body>
+                </html>
+              `.trim();
+
+              setPreview(combinedCode);
+              setKey(prev => prev + 1);
+            }}>
               Update Preview
             </Button>
           )}
@@ -263,5 +286,7 @@ ${js}`
     </div>
   )
 }
+
+
 
 
